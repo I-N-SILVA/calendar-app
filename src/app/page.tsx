@@ -58,6 +58,27 @@ export default function Home() {
     }
   };
 
+  const handleEventMove = (eventId: string, newDate: Date, newHour: number) => {
+    const event = events.find(e => e.id === eventId);
+    if (!event) return;
+
+    // Calculate new start and end times
+    const newStartTime = `${newHour.toString().padStart(2, '0')}:00`;
+    const originalStartHour = parseInt(event.startTime.split(':')[0]);
+    const originalEndHour = parseInt(event.endTime.split(':')[0]);
+    const duration = originalEndHour - originalStartHour;
+    const newEndHour = newHour + duration;
+    const newEndTime = `${newEndHour.toString().padStart(2, '0')}:00`;
+
+    // Update the event
+    updateEvent(eventId, {
+      ...event,
+      date: newDate,
+      startTime: newStartTime,
+      endTime: newEndTime
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900 p-3 sm:p-6 transition-colors duration-200">
       <div className="max-w-7xl mx-auto">
@@ -123,6 +144,7 @@ export default function Home() {
             events={showSearch && filteredEvents.length >= 0 ? filteredEvents : events}
             onEventClick={handleEventClick}
             onTimeSlotClick={handleTimeSlotClick}
+            onEventMove={handleEventMove}
           />
         )}
 

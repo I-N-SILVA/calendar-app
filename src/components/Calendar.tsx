@@ -2,15 +2,27 @@
 
 import { useState, useEffect } from 'react';
 import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
+import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 
 interface CalendarProps {
   events: CalendarEvent[];
   onEventClick?: (event: CalendarEvent) => void;
   onTimeSlotClick?: (date: Date, hour: number) => void;
+  onEventMove?: (eventId: string, newDate: Date, newHour: number) => void;
 }
 
-export default function Calendar({ events, onEventClick, onTimeSlotClick }: CalendarProps) {
+export default function Calendar({ events, onEventClick, onTimeSlotClick, onEventMove }: CalendarProps) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(new Date());
+  
+  const {
+    isDragging,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    isDragOverSlot
+  } = useDragAndDrop(onEventMove || (() => {}));
 
   useEffect(() => {
     const today = new Date();
@@ -146,13 +158,18 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick }: Cale
                   <div
                     key={`${hour}-${dayIndex}`}
                     className={`p-2 min-h-[70px] cursor-pointer transition-all duration-200 relative rounded-xl ${
-                      isCurrentSlot
+                      isDragOverSlot(day, hour)
+                        ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-400 shadow-lg scale-105'
+                        : isCurrentSlot
                         ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 shadow-md'
                         : isTodaySlot
                         ? 'bg-gradient-to-br from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 border border-blue-200'
                         : 'bg-white hover:bg-gradient-to-br hover:from-gray-50 hover:to-slate-50 border border-gray-200'
-                    } hover:shadow-lg hover:scale-[1.02]`}
+                    } hover:shadow-lg hover:scale-[1.02] ${isDragging ? 'drop-zone' : ''}`}
                     onClick={() => onTimeSlotClick?.(day, hour)}
+                    onDragOver={(e) => handleDragOver(day, hour, e)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(day, hour, e)}
                   >
                     {dayEvents.map(event => {
                       const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES[0];
@@ -160,15 +177,26 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick }: Cale
                       return (
                         <div
                           key={event.id}
-                          className={`bg-gradient-to-r ${category.color} text-white rounded-lg p-2 mb-1 text-xs cursor-pointer hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5`}
+                          draggable={!event.originalEventId} // Only allow dragging of base events, not recurring instances
+                          className={`bg-gradient-to-r ${category.color} text-white rounded-lg p-2 mb-1 text-xs cursor-move hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 ${
+                            isDragging ? 'pointer-events-none' : ''
+                          }`}
                           onClick={(e) => {
                             e.stopPropagation();
                             onEventClick?.(event);
                           }}
+                          onDragStart={(e) => {
+                            e.stopPropagation();
+                            handleDragStart(event, e);
+                          }}
+                          onDragEnd={handleDragEnd}
                         >
                           <div className="flex items-center gap-1 mb-1">
                             <span>{category.icon}</span>
                             <span className="font-semibold truncate">{event.title}</span>
+                            {event.isRecurring && (
+                              <span className="text-white opacity-75 text-xs" title="Recurring event">🔄</span>
+                            )}
                           </div>
                           <div className="opacity-90 text-xs">{event.startTime} - {event.endTime}</div>
                         </div>

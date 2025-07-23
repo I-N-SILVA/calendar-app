@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
+import { CalendarEvent, DEFAULT_CATEGORIES, RecurrenceRule } from '@/types/event';
+import RecurrenceSelector from '@/components/RecurrenceSelector';
 
 interface EventModalProps {
   isOpen: boolean;
@@ -26,6 +27,8 @@ export default function EventModal({
   const [endTime, setEndTime] = useState('');
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('work');
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrence, setRecurrence] = useState<RecurrenceRule | undefined>();
 
   useEffect(() => {
     if (editingEvent) {
@@ -35,6 +38,8 @@ export default function EventModal({
       setEndTime(editingEvent.endTime);
       setDescription(editingEvent.description || '');
       setCategoryId(editingEvent.categoryId || 'work');
+      setIsRecurring(editingEvent.isRecurring || false);
+      setRecurrence(editingEvent.recurrence);
     } else if (selectedDate) {
       setDate(selectedDate.toISOString().split('T')[0]);
       if (selectedHour !== undefined) {
@@ -57,7 +62,9 @@ export default function EventModal({
       startTime,
       endTime,
       description,
-      categoryId
+      categoryId,
+      isRecurring,
+      recurrence
     });
 
     setTitle('');
@@ -66,6 +73,8 @@ export default function EventModal({
     setEndTime('');
     setDescription('');
     setCategoryId('work');
+    setIsRecurring(false);
+    setRecurrence(undefined);
     onClose();
   };
 
@@ -76,6 +85,8 @@ export default function EventModal({
     setEndTime('');
     setDescription('');
     setCategoryId('work');
+    setIsRecurring(false);
+    setRecurrence(undefined);
     onClose();
   };
 
@@ -202,6 +213,17 @@ export default function EventModal({
               className="w-full px-4 py-3 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-500 resize-none"
               placeholder="Enter event description (optional)"
               rows={3}
+            />
+          </div>
+
+          <div>
+            <RecurrenceSelector
+              recurrence={recurrence}
+              isRecurring={isRecurring}
+              onRecurrenceChange={(newRecurrence, newIsRecurring) => {
+                setRecurrence(newRecurrence);
+                setIsRecurring(newIsRecurring);
+              }}
             />
           </div>
 

@@ -5,6 +5,15 @@ export interface EventCategory {
   icon: string;
 }
 
+export interface RecurrenceRule {
+  frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
+  interval: number; // e.g., every 2 weeks = frequency: 'weekly', interval: 2
+  endType: 'never' | 'after' | 'until';
+  endValue?: number | Date; // count of occurrences or end date
+  daysOfWeek?: number[]; // 0=Sunday, 1=Monday, etc. (for weekly)
+  dayOfMonth?: number; // for monthly
+}
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -13,6 +22,10 @@ export interface CalendarEvent {
   endTime: string;
   description?: string;
   categoryId: string;
+  recurrence?: RecurrenceRule;
+  isRecurring?: boolean;
+  originalEventId?: string; // for recurring event instances
+  instanceDate?: Date; // specific date for this instance
 }
 
 export const DEFAULT_CATEGORIES: EventCategory[] = [

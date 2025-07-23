@@ -1,11 +1,33 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { CalendarEvent } from '@/types/event';
+import { generateRecurringEvents } from '@/utils/recurrence';
 
 export function useEvents() {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [baseEvents, setBaseEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Generate all event instances including recurring ones
+  const events = useMemo(() => {
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - 2); // 2 months before
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + 12); // 12 months after
+
+    const allEvents: CalendarEvent[] = [];
+    
+    baseEvents.forEach(event => {
+      if (event.isRecurring && event.recurrence) {
+        const recurringEvents = generateRecurringEvents(event, startDate, endDate);
+        allEvents.push(...recurringEvents);
+      } else {
+        allEvents.push(event);
+      }
+    });
+
+    return allEvents;
+  }, [baseEvents]);
 
   useEffect(() => {
     const savedEvents = localStorage.getItem('calendar-events');
@@ -14,19 +36,21 @@ export function useEvents() {
         const parsedEvents = JSON.parse(savedEvents).map((event: CalendarEvent & { date: string }) => ({
           ...event,
           date: new Date(event.date),
-          categoryId: event.categoryId || 'work' // Default to 'work' for existing events
+          categoryId: event.categoryId || 'work', // Default to 'work' for existing events
+          isRecurring: event.isRecurring || false,
+          recurrence: event.recurrence
         }));
-        setEvents(parsedEvents);
+        setBaseEvents(parsedEvents);
       } catch (error) {
         console.error('Error parsing saved events:', error);
-        setEvents([]);
+        setBaseEvents([]);
       }
     }
     setIsLoading(false);
   }, []);
 
-  const saveEvents = (newEvents: CalendarEvent[]) => {
-    setEvents(newEvents);
+  const saveBaseEvents = (newEvents: CalendarEvent[]) => {
+    setBaseEvents(newEvents);
     localStorage.setItem('calendar-events', JSON.stringify(newEvents));
   };
 
@@ -35,24 +59,27 @@ export function useEvents() {
       ...eventData,
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
     };
-    const updatedEvents = [...events, newEvent];
-    saveEvents(updatedEvents);
+    const updatedEvents = [...baseEvents, newEvent];
+    saveBaseEvents(updatedEvents);
   };
 
   const updateEvent = (eventId: string, eventData: Omit<CalendarEvent, 'id'>) => {
-    const updatedEvents = events.map(event =>
+    const updatedEvents = baseEvents.map(event =>
       event.id === eventId ? { ...eventData, id: eventId } : event
     );
-    saveEvents(updatedEvents);
+    saveBaseEvents(updatedEvents);
   };
 
   const deleteEvent = (eventId: string) => {
-    const updatedEvents = events.filter(event => event.id !== eventId);
-    saveEvents(updatedEvents);
+    // For recurring events, delete the base event (which removes all instances)
+    const updatedEvents = baseEvents.filter(event => 
+      event.id !== eventId && event.originalEventId !== eventId
+    );
+    saveBaseEvents(updatedEvents);
   };
 
   const getEventById = (eventId: string) => {
-    return events.find(event => event.id === eventId);
+    return baseEvents.find(event => event.id === eventId);
   };
 
   return {
