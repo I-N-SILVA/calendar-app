@@ -3,11 +3,13 @@
 import { useState, useEffect } from 'react';
 import { CalendarEvent, DEFAULT_CATEGORIES, RecurrenceRule } from '@/types/event';
 import RecurrenceSelector from '@/components/RecurrenceSelector';
+import TimeBarPicker from '@/components/TimeBarPicker';
 
 interface EventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (event: Omit<CalendarEvent, 'id'>) => void;
+  onDelete?: (eventId: string) => void;
   selectedDate?: Date;
   selectedHour?: number;
   editingEvent?: CalendarEvent;
@@ -17,10 +19,29 @@ export default function EventModal({
   isOpen,
   onClose,
   onSave,
+  onDelete,
   selectedDate,
   selectedHour,
   editingEvent
 }: EventModalProps) {
+  // Helper function to calculate duration
+  const calculateDuration = (start: string, end: string) => {
+    if (!start || !end) return null;
+    const [startHour, startMin] = start.split(':').map(Number);
+    const [endHour, endMin] = end.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    const duration = endMinutes - startMinutes;
+    if (duration <= 0) return null;
+    
+    const hours = Math.floor(duration / 60);
+    const minutes = duration % 60;
+    return {
+      duration,
+      text: `${hours > 0 ? `${hours}h ` : ''}${minutes > 0 ? `${minutes}m` : ''}`,
+      percentage: Math.min(100, Math.max(0, (duration / 480) * 100)) // 8 hours = 100%
+    };
+  };
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
   const [startTime, setStartTime] = useState('');
@@ -93,20 +114,20 @@ export default function EventModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-8 w-full max-w-lg transform transition-all max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+      <div className="bg-card shadow-2xl w-full max-w-2xl transform transition-all max-h-[90vh] overflow-y-auto border border-border spacing-mathematical">
         <div className="flex justify-between items-start mb-6">
           <div className="flex-1 mr-4">
-            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1">
+            <h3 className="text-xl sm:text-2xl font-bold text-card-foreground mb-1">
               {editingEvent ? 'Edit Event' : 'Create New Event'}
             </h3>
-            <p className="text-xs sm:text-sm text-gray-600">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {editingEvent ? 'Update your event details' : 'Add a new event to your calendar'}
             </p>
           </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+            className="text-muted-foreground hover:text-foreground hover:bg-muted p-2 transition-colors"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -114,34 +135,34 @@ export default function EventModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="title" className="block text-sm font-semibold text-gray-900 mb-2">
-              📝 Event Title *
+        <form onSubmit={handleSubmit} className="brutalist-form">
+          <div className="brutalist-form-group stagger-animation stagger-delay-1">
+            <label htmlFor="title" className="brutalist-form-label">
+              [TITLE] *
             </label>
             <input
               type="text"
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-4 py-3 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-500"
+              className="brutalist-form-input w-full"
               placeholder="Enter event title"
               required
             />
           </div>
 
-          <div>
-            <label htmlFor="category" className="block text-sm font-semibold text-gray-900 mb-2">
-              🏷️ Category *
+          <div className="brutalist-form-group stagger-animation stagger-delay-2">
+            <label htmlFor="category" className="brutalist-form-label">
+              [CATEGORY] *
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{gap: 'var(--space-sm)'}}>
               {DEFAULT_CATEGORIES.map((category) => (
                 <label
                   key={category.id}
-                  className={`flex items-center gap-2 p-2 sm:p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                  className={`flex items-center gap-2 p-2 sm:p-3 border-2 cursor-pointer transition-all font-mono ${
                     categoryId === category.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      ? 'border-primary bg-primary text-primary-foreground font-bold'
+                      : 'border-border hover:border-foreground hover:bg-muted text-card-foreground'
                   }`}
                 >
                   <input
@@ -153,64 +174,78 @@ export default function EventModal({
                     className="sr-only"
                   />
                   <span className="text-base sm:text-lg">{category.icon}</span>
-                  <span className="text-sm font-medium text-gray-900">{category.name}</span>
+                  <span className="text-sm font-medium text-card-foreground">{category.name}</span>
                 </label>
               ))}
             </div>
           </div>
 
-          <div>
-            <label htmlFor="date" className="block text-sm font-semibold text-gray-900 mb-2">
-              📅 Date *
+          <div className="brutalist-form-group stagger-animation stagger-delay-3">
+            <label htmlFor="date" className="brutalist-form-label">
+              [DATE] *
             </label>
             <input
               type="date"
               id="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              className="w-full px-4 py-3 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="brutalist-form-input w-full"
               required
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="startTime" className="block text-sm font-semibold text-gray-900 mb-2">
-                🕐 Start Time *
-              </label>
-              <input
-                type="time"
-                id="startTime"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-4 py-3 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="endTime" className="block text-sm font-semibold text-gray-900 mb-2">
-                🕐 End Time *
-              </label>
-              <input
-                type="time"
-                id="endTime"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                className="w-full px-4 py-3 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                required
-              />
-            </div>
+          <div className="stagger-animation stagger-delay-4" style={{display: 'grid', gap: 'var(--space-2xl)'}}>
+            <TimeBarPicker
+              value={startTime}
+              onChange={setStartTime}
+              label="START"
+              onDurationSelect={(minutes) => {
+                if (startTime) {
+                  const [hour, min] = startTime.split(':').map(Number);
+                  const startMinutes = hour * 60 + min;
+                  const endMinutes = startMinutes + minutes;
+                  const endHour = Math.floor(endMinutes / 60) % 24;
+                  const endMin = endMinutes % 60;
+                  setEndTime(`${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`);
+                }
+              }}
+            />
+            <TimeBarPicker
+              value={endTime}
+              onChange={setEndTime}
+              label="END"
+            />
           </div>
+          
+          {/* Duration Display */}
+          {startTime && endTime && (
+            <div className="bg-muted/50 border-2 border-border spacing-mathematical">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Event Duration:</span>
+                <span className="text-sm font-semibold text-foreground">
+                  {calculateDuration(startTime, endTime)?.text || '[INVALID]'}
+                </span>
+              </div>
+              <div className="mt-3 bg-primary/20 h-3 overflow-hidden">
+                <div 
+                  className="bg-primary h-full transition-all duration-300"
+                  style={{
+                    width: `${calculateDuration(startTime, endTime)?.percentage || 0}%`
+                  }}
+                />
+              </div>
+            </div>
+          )}
 
-          <div>
-            <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
-              📄 Description
+          <div className="brutalist-form-group stagger-animation stagger-delay-5">
+            <label htmlFor="description" className="brutalist-form-label">
+              [DESCRIPTION]
             </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-4 py-3 text-gray-900 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-500 resize-none"
+              className="brutalist-form-input w-full resize-none"
               placeholder="Enter event description (optional)"
               rows={3}
             />
@@ -227,19 +262,32 @@ export default function EventModal({
             />
           </div>
 
-          <div className="flex gap-3 pt-6">
+          <div className="flex" style={{gap: 'var(--space-md)', paddingTop: 'var(--space-xl)'}}>
             <button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 px-6 rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="flex-1 bg-primary text-primary-foreground hover:opacity-90 transition-all duration-200 font-bold font-mono uppercase tracking-wider shadow-lg hover:shadow-xl" style={{padding: 'var(--space-lg) var(--space-xl)'}}
             >
-              {editingEvent ? '✨ Update Event' : '🎉 Create Event'}
+              {editingEvent ? '[UPDATE]' : '[CREATE]'}
             </button>
+            {editingEvent && onDelete && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm(`Delete "${editingEvent.title}"?`)) {
+                    onDelete(editingEvent.id);
+                  }
+                }}
+                className="flex-1 bg-destructive text-destructive-foreground hover:bg-destructive/80 transition-all duration-200 font-bold font-mono uppercase tracking-wider border-2 border-destructive" style={{padding: 'var(--space-lg) var(--space-xl)'}}
+              >
+                [DELETE]
+              </button>
+            )}
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 bg-gradient-to-r from-gray-500 to-gray-600 text-white py-3 px-6 rounded-xl hover:from-gray-600 hover:to-gray-700 transition-all duration-200 font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="flex-1 bg-muted text-muted-foreground hover:bg-muted-foreground hover:text-background transition-all duration-200 font-bold font-mono uppercase tracking-wider" style={{padding: 'var(--space-lg) var(--space-xl)'}}
             >
-              Cancel
+              [CANCEL]
             </button>
           </div>
         </form>

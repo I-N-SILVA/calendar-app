@@ -29,11 +29,11 @@ export interface CalendarEvent {
 }
 
 export const DEFAULT_CATEGORIES: EventCategory[] = [
-  { id: 'work', name: 'Work', color: 'from-blue-500 to-blue-600', icon: '💼' },
-  { id: 'personal', name: 'Personal', color: 'from-green-500 to-green-600', icon: '🏠' },
-  { id: 'health', name: 'Health', color: 'from-red-500 to-red-600', icon: '🏥' },
-  { id: 'social', name: 'Social', color: 'from-purple-500 to-purple-600', icon: '👥' },
-  { id: 'education', name: 'Education', color: 'from-yellow-500 to-yellow-600', icon: '📚' },
-  { id: 'travel', name: 'Travel', color: 'from-indigo-500 to-indigo-600', icon: '✈️' },
-  { id: 'other', name: 'Other', color: 'from-gray-500 to-gray-600', icon: '📋' }
+  { id: 'work', name: 'Work', color: 'bg-primary text-primary-foreground border-primary', icon: '[W]' },
+  { id: 'personal', name: 'Personal', color: 'bg-accent text-accent-foreground border-accent', icon: '[P]' },
+  { id: 'health', name: 'Health', color: 'bg-destructive text-destructive-foreground border-destructive', icon: '[H]' },
+  { id: 'social', name: 'Social', color: 'bg-secondary text-secondary-foreground border-secondary', icon: '[S]' },
+  { id: 'education', name: 'Education', color: 'bg-chart-3 text-background border-chart-3', icon: '[E]' },
+  { id: 'travel', name: 'Travel', color: 'bg-chart-4 text-background border-chart-4', icon: '[T]' },
+  { id: 'other', name: 'Other', color: 'bg-muted text-muted-foreground border-muted', icon: '[O]' }
 ];

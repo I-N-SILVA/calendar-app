@@ -1,6 +1,10 @@
 'use client';
 
 import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
+import { useRippleEffect } from '@/hooks/useRippleEffect';
+import { useDragAndDrop } from '@/hooks/useDragAndDrop';
+import { useContextMenu } from '@/hooks/useContextMenu';
+import ContextMenu from './ContextMenu';
 
 interface MonthViewProps {
   currentDate: Date;
@@ -8,6 +12,9 @@ interface MonthViewProps {
   onEventClick?: (event: CalendarEvent) => void;
   onDateClick?: (date: Date) => void;
   onDateChange: (date: Date) => void;
+  onEventMove?: (eventId: string, newDate: Date, newHour: number) => void;
+  onEventDelete?: (eventId: string) => void;
+  onEventDuplicate?: (event: CalendarEvent) => void;
 }
 
 export default function MonthView({ 
@@ -15,8 +22,28 @@ export default function MonthView({
   events, 
   onEventClick, 
   onDateClick,
-  onDateChange 
+  onDateChange,
+  onEventMove,
+  onEventDelete,
+  onEventDuplicate
 }: MonthViewProps) {
+  const createRipple = useRippleEffect();
+  const {
+    draggedEvent,
+    isDragging,
+    hasDragMoved,
+    handleDragStart,
+    handleDragEnd,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    isDragOverSlot,
+    handleMouseDown,
+    handleMouseMove,
+    handleClick
+  } = useDragAndDrop(onEventMove || (() => {}));
+  
+  const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   
@@ -32,10 +59,9 @@ export default function MonthView({
   };
 
   const formatMonth = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric',
-      month: 'long'
-    });
+    const month = date.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
+    const year = date.getFullYear();
+    return `[${month}_${year}]`;
   };
 
   const isToday = (date: Date) => {
@@ -46,7 +72,7 @@ export default function MonthView({
   const getEventsForDate = (date: Date) => {
     return events.filter(event => 
       event.date.toDateString() === date.toDateString()
-    ).slice(0, 3); // Limit to 3 events to prevent overflow
+    ).slice(0, 4); // Slightly more events for month view
   };
 
   const getDaysArray = () => {
@@ -74,50 +100,71 @@ export default function MonthView({
     return days;
   };
 
-  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weekdays = ['[SUN]', '[MON]', '[TUE]', '[WED]', '[THU]', '[FRI]', '[SAT]'];
   const days = getDaysArray();
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl p-8 border border-gray-100">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            {formatMonth(currentDate)}
-          </h2>
-          <p className="text-gray-600 mt-1">Monthly overview</p>
+    <div className="brutalist-card bg-card border-2 border-border spacing-mathematical">
+      {/* ASCII Month Header */}
+      <div className="border-b-2 border-border" style={{padding: 'var(--space-xl) var(--space-xl) var(--space-lg)'}}>
+        <div className="ascii-divider text-xs mb-4">
+          ████████████████████████████████████████
         </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => navigateMonth('prev')}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Previous
-          </button>
-          <button
-            onClick={() => onDateChange(new Date())}
-            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-          >
-            Today
-          </button>
-          <button
-            onClick={() => navigateMonth('next')}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2"
-          >
-            Next
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="mono-heading text-foreground text-2xl tracking-wider">
+              {formatMonth(currentDate)}
+            </h2>
+            <p className="text-muted-foreground font-mono text-sm uppercase tracking-wide mt-2">
+              [MONTHLY_OVERVIEW]
+            </p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={(e) => {
+                createRipple(e);
+                navigateMonth('prev');
+              }}
+              className="brutalist-button ripple-effect flex items-center gap-2" 
+              style={{padding: 'var(--space-md) var(--space-lg)'}}
+            >
+              <span className="text-lg">◀</span>
+              [PREV]
+            </button>
+            <button
+              onClick={(e) => {
+                createRipple(e);
+                onDateChange(new Date());
+              }}
+              className="brutalist-button bg-accent text-accent-foreground ripple-effect" 
+              style={{padding: 'var(--space-md) var(--space-lg)'}}
+            >
+              [TODAY]
+            </button>
+            <button
+              onClick={(e) => {
+                createRipple(e);
+                navigateMonth('next');
+              }}
+              className="brutalist-button ripple-effect flex items-center gap-2" 
+              style={{padding: 'var(--space-md) var(--space-lg)'}}
+            >
+              [NEXT]
+              <span className="text-lg">▶</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl overflow-hidden p-1">
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7 border-2 border-border" style={{gap: '2px', padding: 'var(--space-md)'}}>
         {/* Weekday headers */}
         {weekdays.map((day) => (
-          <div key={day} className="bg-gradient-to-br from-slate-50 to-slate-100 p-4 font-bold text-center text-gray-800 rounded-xl">
+          <div 
+            key={day} 
+            className="bg-muted border-2 border-border text-center font-mono font-bold text-muted-foreground uppercase tracking-wider text-sm"
+            style={{padding: 'var(--space-md)'}}
+          >
             {day}
           </div>
         ))}
@@ -130,22 +177,28 @@ export default function MonthView({
           return (
             <div
               key={index}
-              className={`p-2 min-h-[120px] rounded-xl cursor-pointer transition-all duration-200 ${
+              className={`border-2 cursor-pointer transition-all duration-200 min-h-[140px] ${
                 !isCurrentMonth
-                  ? 'bg-gray-50 text-gray-400'
+                  ? 'bg-muted/50 border-muted text-muted-foreground'
                   : today
-                  ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg'
-                  : 'bg-white hover:bg-gradient-to-br hover:from-blue-50 hover:to-purple-50 hover:shadow-md'
-              }`}
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card border-border hover:border-foreground hover:bg-muted'
+              } ${isDragOverSlot(date, 12) ? 'drop-zone' : ''}`}
+              style={{padding: 'var(--space-sm)'}}
               onClick={() => onDateClick?.(date)}
+              onDragOver={(e) => handleDragOver(date, 12, e)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(date, 12, e)}
             >
-              <div className={`text-sm font-semibold mb-1 ${
-                today ? 'text-white' : isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+              {/* Date Number */}
+              <div className={`font-mono font-bold mb-2 ${
+                today ? 'text-primary-foreground' : isCurrentMonth ? 'text-foreground' : 'text-muted-foreground'
               }`}>
-                {date.getDate()}
-                {today && <div className="text-xs opacity-90">Today</div>}
+                <div className="text-lg">{date.getDate().toString().padStart(2, '0')}</div>
+                {today && <div className="text-xs font-mono uppercase tracking-wide">[TODAY]</div>}
               </div>
               
+              {/* Events */}
               <div className="space-y-1">
                 {dayEvents.map((event) => {
                   const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES[0];
@@ -153,31 +206,38 @@ export default function MonthView({
                   return (
                     <div
                       key={event.id}
-                      className={`text-xs p-1 rounded truncate cursor-pointer transition-all hover:shadow-sm ${
+                      className={`text-xs font-mono border-2 cursor-pointer transition-all duration-150 truncate ${
                         !isCurrentMonth ? 'opacity-50' : ''
                       } ${
                         today 
-                          ? 'bg-white bg-opacity-20 text-white hover:bg-opacity-30' 
-                          : `bg-gradient-to-r ${category.color} text-white hover:shadow-md`
-                      }`}
+                          ? 'bg-background text-foreground border-background hover:bg-muted' 
+                          : `${category.color} border-2 hover:transform hover:translate-x-1`
+                      } ${draggedEvent?.id === event.id ? 'dragging-event' : ''}`}
+                      style={{padding: 'var(--space-xs) var(--space-sm)'}}
+                      draggable={isCurrentMonth}
+                      onDragStart={(e) => handleDragStart(event, e)}
+                      onDragEnd={handleDragEnd}
+                      onMouseDown={(e) => handleMouseDown(event, e)}
+                      onMouseMove={handleMouseMove}
                       onClick={(e) => {
                         e.stopPropagation();
-                        onEventClick?.(event);
+                        handleClick(event, onEventClick);
                       }}
+                      onContextMenu={(e) => showContextMenu(e, event)}
                     >
                       <div className="flex items-center gap-1">
-                        <span className="text-xs">{category.icon}</span>
-                        <span className="truncate">{event.title}</span>
+                        <span className="font-bold">{category.icon}</span>
+                        <span className="truncate uppercase tracking-wide">{event.title}</span>
                       </div>
                     </div>
                   );
                 })}
                 {dayEvents.length === 0 && isCurrentMonth && (
                   <div className="opacity-0 hover:opacity-100 transition-opacity">
-                    <div className={`text-xs p-1 rounded ${
-                      today ? 'text-white opacity-70' : 'text-gray-400'
-                    }`}>
-                      + Add
+                    <div className={`text-xs border-2 border-dashed font-mono ${
+                      today ? 'text-primary-foreground border-primary-foreground' : 'text-muted-foreground border-muted-foreground'
+                    }`} style={{padding: 'var(--space-xs) var(--space-sm)'}}>
+                      [+ADD]
                     </div>
                   </div>
                 )}
@@ -186,6 +246,24 @@ export default function MonthView({
           );
         })}
       </div>
+
+      {/* Footer */}
+      <div className="border-t-2 border-border text-center font-mono text-xs text-muted-foreground" style={{padding: 'var(--space-md)'}}>
+        [CLICK_DATE_TO_CREATE] • [RIGHT_CLICK_EVENT_FOR_MENU] • [{events.length}_TOTAL_EVENTS]
+      </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          event={contextMenu.event}
+          onClose={hideContextMenu}
+          onEdit={(event) => onEventClick?.(event)}
+          onDelete={(eventId) => onEventDelete?.(eventId)}
+          onDuplicate={(event) => onEventDuplicate?.(event)}
+        />
+      )}
     </div>
   );
 }

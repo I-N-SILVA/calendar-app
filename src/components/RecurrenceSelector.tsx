@@ -60,8 +60,8 @@ export default function RecurrenceSelector({
 
   return (
     <div>
-      <label className="block text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">
-        🔄 Recurring Event
+      <label className="block text-sm font-semibold text-card-foreground mb-2 font-mono uppercase tracking-wider">
+        [REPEAT]
       </label>
       
       {/* Toggle Switch */}
@@ -70,25 +70,25 @@ export default function RecurrenceSelector({
           type="button"
           onClick={() => handleRecurrenceToggle(!isRecurring)}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-            isRecurring ? 'bg-blue-500' : 'bg-gray-300'
+            isRecurring ? 'bg-primary' : 'bg-muted'
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-card transition-transform duration-200 ${
               isRecurring ? 'translate-x-6' : 'translate-x-1'
             }`}
           />
         </button>
-        <span className="text-sm text-gray-700 dark:text-gray-300">
+        <span className="text-sm text-muted-foreground">
           {isRecurring ? 'Repeating event' : 'One-time event'}
         </span>
       </div>
 
       {/* Recurrence Description */}
       {isRecurring && recurrence && (
-        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl border border-blue-200 dark:border-blue-700">
-          <div className="text-sm font-medium text-blue-800 dark:text-blue-200">
-            📅 {getRecurrenceDescription(recurrence)}
+        <div className="mb-4 p-3 bg-primary/10 border border-primary">
+          <div className="text-sm font-medium text-primary font-mono font-bold">
+            [SCHEDULE] {getRecurrenceDescription(recurrence)}
           </div>
         </div>
       )}
@@ -98,7 +98,7 @@ export default function RecurrenceSelector({
         <div className="space-y-4">
           {/* Frequency */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-card-foreground mb-2">
               Repeats
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -107,10 +107,10 @@ export default function RecurrenceSelector({
                   key={freq}
                   type="button"
                   onClick={() => updateRecurrence({ frequency: freq })}
-                  className={`p-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`p-2 text-sm font-medium transition-colors font-mono uppercase ${
                     recurrence.frequency === freq
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                      ? 'bg-primary text-primary-foreground font-bold'
+                      : 'bg-muted text-muted-foreground hover:bg-foreground hover:text-background'
                   }`}
                 >
                   {freq.charAt(0).toUpperCase() + freq.slice(1)}
@@ -121,7 +121,7 @@ export default function RecurrenceSelector({
 
           {/* Interval */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-card-foreground mb-2">
               Every
             </label>
             <div className="flex items-center gap-2">
@@ -131,9 +131,9 @@ export default function RecurrenceSelector({
                 max="99"
                 value={recurrence.interval}
                 onChange={(e) => updateRecurrence({ interval: parseInt(e.target.value) || 1 })}
-                className="w-16 px-2 py-1 text-center bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-gray-900 dark:text-gray-100"
+                className="w-16 px-2 py-1 text-center bg-input border border-border rounded text-foreground"
               />
-              <span className="text-sm text-gray-600 dark:text-gray-400">
+              <span className="text-sm text-muted-foreground">
                 {recurrence.frequency === 'daily' ? 'day(s)' :
                  recurrence.frequency === 'weekly' ? 'week(s)' :
                  recurrence.frequency === 'monthly' ? 'month(s)' : 'year(s)'}
@@ -144,7 +144,7 @@ export default function RecurrenceSelector({
           {/* Days of week for weekly recurrence */}
           {recurrence.frequency === 'weekly' && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-card-foreground mb-2">
                 Repeat on
               </label>
               <div className="flex gap-2">
@@ -153,10 +153,10 @@ export default function RecurrenceSelector({
                     key={day.value}
                     type="button"
                     onClick={() => toggleWeekday(day.value)}
-                    className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                    className={`w-10 h-10 text-sm font-medium transition-colors font-mono font-bold ${
                       recurrence.daysOfWeek?.includes(day.value)
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-foreground hover:text-background'
                     }`}
                   >
                     {day.label}
@@ -168,7 +168,7 @@ export default function RecurrenceSelector({
 
           {/* End condition */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-card-foreground mb-2">
               Ends
             </label>
             <div className="space-y-2">
@@ -178,9 +178,9 @@ export default function RecurrenceSelector({
                   name="endType"
                   checked={recurrence.endType === 'never'}
                   onChange={() => updateRecurrence({ endType: 'never', endValue: undefined })}
-                  className="text-blue-500"
+                  className="accent-primary"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Never</span>
+                <span className="text-sm text-muted-foreground">Never</span>
               </label>
               
               <label className="flex items-center gap-2">
@@ -189,9 +189,9 @@ export default function RecurrenceSelector({
                   name="endType"
                   checked={recurrence.endType === 'after'}
                   onChange={() => updateRecurrence({ endType: 'after', endValue: 10 })}
-                  className="text-blue-500"
+                  className="accent-primary"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">After</span>
+                <span className="text-sm text-muted-foreground">After</span>
                 {recurrence.endType === 'after' && (
                   <div className="flex items-center gap-1">
                     <input
@@ -200,9 +200,9 @@ export default function RecurrenceSelector({
                       max="999"
                       value={typeof recurrence.endValue === 'number' ? recurrence.endValue : 10}
                       onChange={(e) => updateRecurrence({ endValue: parseInt(e.target.value) || 10 })}
-                      className="w-16 px-2 py-1 text-center bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-gray-100"
+                      className="w-16 px-2 py-1 text-center bg-input border border-border rounded text-sm text-foreground"
                     />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">occurrences</span>
+                    <span className="text-sm text-muted-foreground">occurrences</span>
                   </div>
                 )}
               </label>
@@ -217,16 +217,16 @@ export default function RecurrenceSelector({
                     nextMonth.setMonth(nextMonth.getMonth() + 1);
                     updateRecurrence({ endType: 'until', endValue: nextMonth });
                   }}
-                  className="text-blue-500"
+                  className="accent-primary"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Until</span>
+                <span className="text-sm text-muted-foreground">Until</span>
                 {recurrence.endType === 'until' && (
                   <input
                     type="date"
                     value={recurrence.endValue instanceof Date ? 
                       recurrence.endValue.toISOString().split('T')[0] : ''}
                     onChange={(e) => updateRecurrence({ endValue: new Date(e.target.value) })}
-                    className="px-2 py-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded text-sm text-gray-900 dark:text-gray-100"
+                    className="px-2 py-1 bg-input border border-border rounded text-sm text-foreground"
                   />
                 )}
               </label>

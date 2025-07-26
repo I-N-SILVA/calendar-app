@@ -2,11 +2,12 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark';
+type Theme = 'light' | 'dark' | 'terminal-green' | 'amber-terminal';
 
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  cycleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -26,7 +27,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const updateDocumentClass = (newTheme: Theme) => {
     const root = document.documentElement;
-    root.classList.remove('light', 'dark');
+    root.classList.remove('light', 'dark', 'terminal-green', 'amber-terminal');
     root.classList.add(newTheme);
   };
 
@@ -37,8 +38,22 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     updateDocumentClass(newTheme);
   };
 
+  const cycleTheme = () => {
+    let newTheme: Theme;
+    switch (theme) {
+      case 'light': newTheme = 'dark'; break;
+      case 'dark': newTheme = 'terminal-green'; break;
+      case 'terminal-green': newTheme = 'amber-terminal'; break;
+      case 'amber-terminal': newTheme = 'light'; break;
+      default: newTheme = 'light';
+    }
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateDocumentClass(newTheme);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, cycleTheme }}>
       {children}
     </ThemeContext.Provider>
   );

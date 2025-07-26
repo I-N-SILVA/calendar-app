@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "📅 My Calendar - Beautiful Event Management",
+  title: "[CALENDAR] - Event Management System",
   description: "A modern, feature-rich calendar app with categories, multiple views, and search functionality. Built with Next.js and styled with Tailwind CSS.",
 };
 
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
+    <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

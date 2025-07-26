@@ -87,11 +87,11 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
   const hasActiveFilters = searchQuery || selectedCategories.length > 0 || dateFilter !== 'all';
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 sm:p-6 mb-6 border border-gray-100 dark:border-gray-700 transition-colors duration-200">
+    <div className="bg-card rounded-2xl shadow-lg p-4 sm:p-6 mb-6 border border-border transition-colors duration-200" style={{ boxShadow: 'var(--shadow-lg)' }}>
       {/* Search Bar */}
       <div className="relative mb-4">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
@@ -100,14 +100,14 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
           placeholder="Search events by title or description..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900 placeholder-gray-500"
+          className="w-full pl-12 pr-4 py-3 bg-input border-2 border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring transition-all text-foreground placeholder-muted-foreground"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery('')}
             className="absolute inset-y-0 right-0 pr-4 flex items-center"
           >
-            <svg className="w-5 h-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -124,8 +124,8 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
               onClick={() => setDateFilter(filter)}
               className={`px-4 py-2 rounded-xl font-medium transition-all text-sm ${
                 dateFilter === filter
-                  ? 'bg-blue-500 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground'
               }`}
             >
               {filter === 'all' ? 'All Time' : filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -139,8 +139,8 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
             onClick={() => setIsFilterOpen(!isFilterOpen)}
             className={`px-4 py-2 rounded-xl font-medium transition-all text-sm flex items-center gap-2 ${
               isFilterOpen || selectedCategories.length > 0
-                ? 'bg-purple-500 text-white shadow-md'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-accent text-accent-foreground shadow-md'
+                : 'bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground'
             }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +148,7 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
             </svg>
             Categories
             {selectedCategories.length > 0 && (
-              <span className="bg-white bg-opacity-30 rounded-full px-2 py-0.5 text-xs">
+              <span className="bg-accent-foreground bg-opacity-20 rounded-full px-2 py-0.5 text-xs">
                 {selectedCategories.length}
               </span>
             )}
@@ -158,7 +158,7 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
           {hasActiveFilters && (
             <button
               onClick={clearAllFilters}
-              className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-xl font-medium transition-all text-sm flex items-center gap-2"
+              className="px-4 py-2 bg-destructive/10 text-destructive hover:bg-destructive/20 rounded-xl font-medium transition-all text-sm flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -171,16 +171,16 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
 
       {/* Category Filters */}
       {isFilterOpen && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
-          <h4 className="text-sm font-semibold text-gray-900 mb-3">Filter by Category:</h4>
+        <div className="mt-4 pt-4 border-t border-border">
+          <h4 className="text-sm font-semibold text-foreground mb-3">Filter by Category:</h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
             {DEFAULT_CATEGORIES.map((category) => (
               <label
                 key={category.id}
                 className={`flex items-center gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${
                   selectedCategories.includes(category.id)
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-muted-foreground hover:bg-muted'
                 }`}
               >
                 <input
@@ -190,7 +190,7 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
                   className="sr-only"
                 />
                 <span className="text-lg">{category.icon}</span>
-                <span className="text-sm font-medium text-gray-900 truncate">{category.name}</span>
+                <span className="text-sm font-medium text-foreground truncate">{category.name}</span>
               </label>
             ))}
           </div>
@@ -199,13 +199,13 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
 
       {/* Results Summary */}
       {hasActiveFilters && (
-        <div className="mt-4 pt-4 border-t border-gray-200">
+        <div className="mt-4 pt-4 border-t border-border">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">
+            <span className="text-muted-foreground">
               Showing {filteredEvents.length} of {events.length} events
             </span>
             {filteredEvents.length === 0 && events.length > 0 && (
-              <span className="text-orange-600 font-medium">
+              <span className="text-destructive font-medium">
                 No events match your filters
               </span>
             )}

@@ -3,26 +3,37 @@
 import { useState, useEffect } from 'react';
 import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
+import { useContextMenu } from '@/hooks/useContextMenu';
+import ContextMenu from './ContextMenu';
 
 interface CalendarProps {
   events: CalendarEvent[];
   onEventClick?: (event: CalendarEvent) => void;
   onTimeSlotClick?: (date: Date, hour: number) => void;
   onEventMove?: (eventId: string, newDate: Date, newHour: number) => void;
+  onEventDelete?: (eventId: string) => void;
+  onEventDuplicate?: (event: CalendarEvent) => void;
 }
 
-export default function Calendar({ events, onEventClick, onTimeSlotClick, onEventMove }: CalendarProps) {
+export default function Calendar({ events, onEventClick, onTimeSlotClick, onEventMove, onEventDelete, onEventDuplicate }: CalendarProps) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(new Date());
   
   const {
+    draggedEvent,
     isDragging,
+    hasDragMoved,
     handleDragStart,
     handleDragEnd,
     handleDragOver,
     handleDragLeave,
     handleDrop,
-    isDragOverSlot
+    isDragOverSlot,
+    handleMouseDown,
+    handleMouseMove,
+    handleClick
   } = useDragAndDrop(onEventMove || (() => {}));
+  
+  const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
 
   useEffect(() => {
     const today = new Date();
@@ -62,6 +73,30 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
     );
   };
 
+  // Calculate event duration in hours
+  const getEventDuration = (event: CalendarEvent) => {
+    const [startHour, startMin] = event.startTime.split(':').map(Number);
+    const [endHour, endMin] = event.endTime.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMin;
+    const endMinutes = endHour * 60 + endMin;
+    return (endMinutes - startMinutes) / 60; // Duration in hours
+  };
+
+  // Check if an event should be rendered at a specific hour
+  const shouldRenderEventAtHour = (event: CalendarEvent, hour: number) => {
+    const startHour = parseInt(event.startTime.split(':')[0]);
+    const endHour = parseInt(event.endTime.split(':')[0]);
+    const endMinutes = parseInt(event.endTime.split(':')[1]);
+    const actualEndHour = endMinutes > 0 ? endHour + 1 : endHour;
+    return hour >= startHour && hour < actualEndHour;
+  };
+
+  // Check if this is the starting hour for an event
+  const isEventStartHour = (event: CalendarEvent, hour: number) => {
+    const startHour = parseInt(event.startTime.split(':')[0]);
+    return hour === startHour;
+  };
+
   const hours = Array.from({ length: 24 }, (_, i) => i);
   const weekDays = getWeekDays(currentWeekStart);
 
@@ -76,18 +111,18 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-8 border border-gray-100">
+    <div className="bg-card shadow-2xl border border-border spacing-mathematical">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
         <div className="text-center sm:text-left">
-          <h2 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground font-mono uppercase tracking-wider">
             Week of {formatDate(currentWeekStart)}
           </h2>
-          <p className="text-gray-600 mt-1 text-sm sm:text-base">Click on any time slot to create an event</p>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base font-mono uppercase tracking-wide">[CLICK_SLOT] // CREATE_EVENT</p>
         </div>
         <div className="flex gap-2 sm:gap-3 justify-center">
           <button
             onClick={() => navigateWeek('prev')}
-            className="px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
+            className="brutalist-button flex items-center gap-1 sm:gap-2 text-sm sm:text-base" style={{padding: 'var(--space-md) var(--space-lg)'}}
           >
             <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -97,13 +132,13 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
           </button>
           <button
             onClick={() => setCurrentWeekStart(new Date())}
-            className="px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 text-sm sm:text-base"
+            className="brutalist-button bg-accent text-accent-foreground text-sm sm:text-base" style={{padding: 'var(--space-md) var(--space-lg)'}}
           >
             Today
           </button>
           <button
             onClick={() => navigateWeek('next')}
-            className="px-3 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-1 sm:gap-2 text-sm sm:text-base"
+            className="brutalist-button flex items-center gap-1 sm:gap-2 text-sm sm:text-base" style={{padding: 'var(--space-md) var(--space-lg)'}}
           >
             <span className="hidden sm:inline">Next</span>
             <span className="sm:hidden">Next</span>
@@ -115,17 +150,17 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
       </div>
 
       <div className="overflow-x-auto">
-        <div className="grid grid-cols-8 gap-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl overflow-hidden p-1 min-w-[800px]">
-          <div className="bg-gradient-to-br from-slate-50 to-slate-100 p-2 sm:p-4 font-bold text-center text-gray-800 rounded-xl">
-            <span className="hidden sm:inline">⏰ Time</span>
-            <span className="sm:hidden">⏰</span>
+        <div className="grid grid-cols-8 bg-muted border border-border p-1 min-w-[800px]" style={{gap: 'var(--space-xs)'}}>
+          <div className="bg-card font-bold text-center text-card-foreground border border-border font-mono uppercase tracking-wider" style={{padding: 'var(--space-sm) var(--space-lg)'}}>
+            <span className="hidden sm:inline">[TIME]</span>
+            <span className="sm:hidden">[T]</span>
           </div>
           {weekDays.map((day, index) => (
-            <div key={index} className={`p-2 sm:p-4 font-bold text-center rounded-xl transition-all ${
+            <div key={index} className={`font-bold text-center transition-all border font-mono uppercase tracking-wider ${
               isToday(day) 
-                ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg' 
-                : 'bg-gradient-to-br from-slate-50 to-slate-100 text-gray-800 hover:from-blue-50 hover:to-purple-50'
-            }`}>
+                ? 'bg-primary text-primary-foreground border-primary' 
+                : 'bg-card text-card-foreground hover:bg-muted border-border'
+            }`} style={{padding: 'var(--space-sm) var(--space-lg)'}}>
               <div className="text-xs sm:text-sm">{formatDate(day)}</div>
               {isToday(day) && <div className="text-xs mt-1 opacity-90">Today</div>}
             </div>
@@ -137,19 +172,18 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
           
           return (
             <div key={hour} className="contents">
-              <div className={`p-2 sm:p-4 text-xs sm:text-sm font-semibold rounded-xl transition-all ${
+              <div className={`text-xs sm:text-sm font-semibold transition-all border font-mono uppercase tracking-wider ${
                 isCurrentTime 
-                  ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 shadow-md' 
-                  : 'bg-gradient-to-br from-slate-50 to-slate-100 text-gray-700'
-              }`}>
+                  ? 'bg-accent text-accent-foreground border-accent' 
+                  : 'bg-card text-card-foreground border-border'
+              }`} style={{padding: 'var(--space-sm) var(--space-lg)'}}>
                 <div className="truncate">{timeString}</div>
                 {isCurrentTime && <div className="text-xs opacity-75 mt-1">Now</div>}
               </div>
               {weekDays.map((day, dayIndex) => {
-                const dayEvents = getEventsForDay(day).filter(event => {
-                  const eventHour = parseInt(event.startTime.split(':')[0]);
-                  return eventHour === hour;
-                });
+                const dayEvents = getEventsForDay(day);
+                const eventsAtThisHour = dayEvents.filter(event => shouldRenderEventAtHour(event, hour));
+                const eventsStartingHere = dayEvents.filter(event => isEventStartHour(event, hour));
                 
                 const isTodaySlot = isToday(day);
                 const isCurrentSlot = isTodaySlot && isCurrentHour(hour);
@@ -157,54 +191,88 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
                 return (
                   <div
                     key={`${hour}-${dayIndex}`}
-                    className={`p-2 min-h-[70px] cursor-pointer transition-all duration-200 relative rounded-xl ${
+                    className={`p-2 min-h-[70px] cursor-pointer transition-all duration-200 relative border ${
                       isDragOverSlot(day, hour)
-                        ? 'bg-gradient-to-br from-yellow-100 to-orange-100 border-2 border-yellow-400 shadow-lg scale-105'
+                        ? 'bg-destructive/20 border-destructive border-4'
                         : isCurrentSlot
-                        ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 shadow-md'
+                        ? 'bg-accent/20 border-accent border-2'
                         : isTodaySlot
-                        ? 'bg-gradient-to-br from-blue-50 to-purple-50 hover:from-blue-100 hover:to-purple-100 border border-blue-200'
-                        : 'bg-white hover:bg-gradient-to-br hover:from-gray-50 hover:to-slate-50 border border-gray-200'
-                    } hover:shadow-lg hover:scale-[1.02] ${isDragging ? 'drop-zone' : ''}`}
+                        ? 'bg-primary/10 hover:bg-primary/20 border-primary/30'
+                        : 'bg-card hover:bg-muted border-border'
+                    } ${isDragging ? 'drop-zone' : ''}`}
                     onClick={() => onTimeSlotClick?.(day, hour)}
                     onDragOver={(e) => handleDragOver(day, hour, e)}
-                    onDragLeave={handleDragLeave}
+                    onDragLeave={(e) => handleDragLeave(e)}
                     onDrop={(e) => handleDrop(day, hour, e)}
                   >
-                    {dayEvents.map(event => {
+                    {/* Render events that span through this hour with reduced opacity */}
+                    {eventsAtThisHour.filter(event => !isEventStartHour(event, hour)).map(event => {
                       const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES[0];
+                      return (
+                        <div
+                          key={`${event.id}-continuation-${hour}`}
+                          className={`font-mono border-2 cursor-pointer transition-all duration-150 ${category.color} border-2 opacity-60 border-l-4`}
+                          style={{padding: 'var(--space-xs) var(--space-sm)'}}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEventClick?.(event);
+                          }}
+                        >
+                          <div className="text-xs font-bold uppercase">↳ {event.title}</div>
+                        </div>
+                      );
+                    })}
+                    
+                    {/* Render events that start at this hour */}
+                    {eventsStartingHere.map(event => {
+                      const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES[0];
+                      const duration = getEventDuration(event);
+                      const heightMultiplier = Math.max(1, Math.min(duration, 6)); // Cap at 6 hours visual height
                       
                       return (
                         <div
                           key={event.id}
-                          draggable={!event.originalEventId} // Only allow dragging of base events, not recurring instances
-                          className={`bg-gradient-to-r ${category.color} text-white rounded-lg p-2 mb-1 text-xs cursor-move hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 ${
-                            isDragging ? 'pointer-events-none' : ''
+                          draggable={true}
+                          className={`font-mono border-2 cursor-pointer transition-all duration-150 ${category.color} border-2 hover:transform hover:translate-x-1 ${
+                            draggedEvent?.id === event.id ? 'dragging-event' : ''
                           }`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEventClick?.(event);
+                          style={{
+                            minHeight: `${40 + (heightMultiplier - 1) * 20}px`,
+                            zIndex: 10,
+                            padding: 'var(--space-sm) var(--space-md)'
                           }}
                           onDragStart={(e) => {
                             e.stopPropagation();
                             handleDragStart(event, e);
                           }}
                           onDragEnd={handleDragEnd}
+                          onMouseDown={(e) => handleMouseDown(event, e)}
+                          onMouseMove={handleMouseMove}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleClick(event, onEventClick);
+                          }}
+                          onContextMenu={(e) => showContextMenu(e, event)}
                         >
                           <div className="flex items-center gap-1 mb-1">
-                            <span>{category.icon}</span>
-                            <span className="font-semibold truncate">{event.title}</span>
+                            <span className="font-mono font-bold">[{category.icon}]</span>
+                            <span className="font-semibold truncate font-mono">{event.title}</span>
                             {event.isRecurring && (
-                              <span className="text-white opacity-75 text-xs" title="Recurring event">🔄</span>
+                              <span className="text-white opacity-75 text-xs font-mono" title="Recurring event">[R]</span>
                             )}
                           </div>
-                          <div className="opacity-90 text-xs">{event.startTime} - {event.endTime}</div>
+                          <div className="opacity-90 text-xs font-mono">{event.startTime} - {event.endTime}</div>
+                          {duration > 1 && (
+                            <div className="text-xs font-mono opacity-75 mt-1">
+                              [{duration.toFixed(1)}H]
+                            </div>
+                          )}
                         </div>
                       );
                     })}
-                    {dayEvents.length === 0 && (
+                    {eventsAtThisHour.length === 0 && (
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                        <div className="text-gray-400 text-xs font-medium">+ Add Event</div>
+                        <div className="text-muted-foreground text-xs font-medium">+ Add Event</div>
                       </div>
                     )}
                   </div>
@@ -215,6 +283,19 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
         })}
         </div>
       </div>
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          event={contextMenu.event}
+          onClose={hideContextMenu}
+          onEdit={(event) => onEventClick?.(event)}
+          onDelete={(eventId) => onEventDelete?.(eventId)}
+          onDuplicate={(event) => onEventDuplicate?.(event)}
+        />
+      )}
     </div>
   );
 }
