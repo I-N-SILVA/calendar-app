@@ -43,6 +43,10 @@ export function useEvents() {
         setBaseEvents(parsedEvents);
       } catch (error) {
         console.error('Error parsing saved events:', error);
+        // Try to backup corrupted data
+        const backupKey = `calendar-events-backup-${Date.now()}`;
+        localStorage.setItem(backupKey, savedEvents);
+        console.log(`Corrupted data backed up to ${backupKey}`);
         setBaseEvents([]);
       }
     }
@@ -51,7 +55,12 @@ export function useEvents() {
 
   const saveBaseEvents = (newEvents: CalendarEvent[]) => {
     setBaseEvents(newEvents);
-    localStorage.setItem('calendar-events', JSON.stringify(newEvents));
+    try {
+      localStorage.setItem('calendar-events', JSON.stringify(newEvents));
+    } catch (error) {
+      console.error('Error saving events:', error);
+      throw new Error('Failed to save events. Storage may be full.');
+    }
   };
 
   const addEvent = (eventData: Omit<CalendarEvent, 'id'>) => {
@@ -82,12 +91,19 @@ export function useEvents() {
     return baseEvents.find(event => event.id === eventId);
   };
 
+  const importEvents = (importedEvents: CalendarEvent[]) => {
+    const updatedEvents = [...baseEvents, ...importedEvents];
+    saveBaseEvents(updatedEvents);
+  };
+
   return {
     events,
+    baseEvents,
     isLoading,
     addEvent,
     updateEvent,
     deleteEvent,
-    getEventById
+    getEventById,
+    importEvents
   };
 }

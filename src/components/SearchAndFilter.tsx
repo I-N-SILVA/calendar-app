@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface SearchAndFilterProps {
   events: CalendarEvent[];
@@ -10,6 +11,7 @@ interface SearchAndFilterProps {
 
 export default function SearchAndFilter({ events, onFilteredEventsChange }: SearchAndFilterProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'week' | 'month'>('all');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -17,9 +19,9 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
   const filteredEvents = useMemo(() => {
     let filtered = events;
 
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    // Search filter (use debounced value)
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase();
       filtered = filtered.filter(event => 
         event.title.toLowerCase().includes(query) ||
         (event.description && event.description.toLowerCase().includes(query))
@@ -62,7 +64,7 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
     }
 
     return filtered;
-  }, [events, searchQuery, selectedCategories, dateFilter]);
+  }, [events, debouncedSearchQuery, selectedCategories, dateFilter]);
 
   // Update parent component when filtered events change
   useMemo(() => {
@@ -84,7 +86,7 @@ export default function SearchAndFilter({ events, onFilteredEventsChange }: Sear
     setIsFilterOpen(false);
   };
 
-  const hasActiveFilters = searchQuery || selectedCategories.length > 0 || dateFilter !== 'all';
+  const hasActiveFilters = debouncedSearchQuery || selectedCategories.length > 0 || dateFilter !== 'all';
 
   return (
     <div className="bg-card rounded-2xl shadow-lg p-4 sm:p-6 mb-6 border border-border transition-colors duration-200" style={{ boxShadow: 'var(--shadow-lg)' }}>
