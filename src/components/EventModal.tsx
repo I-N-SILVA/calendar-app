@@ -18,7 +18,7 @@ interface EventModalProps {
   allEvents: CalendarEvent[];
 }
 
-export default function EventModalEnhanced({
+export default function EventModal({
   isOpen,
   onClose,
   onSave,

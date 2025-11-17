@@ -7,7 +7,7 @@ import MonthView from '@/components/MonthView';
 import ViewSelector, { ViewMode } from '@/components/ViewSelector';
 import SearchAndFilter from '@/components/SearchAndFilter';
 import ThemeToggle from '@/components/ThemeToggle';
-import EventModalEnhanced from '@/components/EventModalEnhanced';
+import EventModal from '@/components/EventModal';
 import CommandPalette from '@/components/CommandPalette';
 import ExportImportPanel from '@/components/ExportImportPanel';
 import SettingsPanel from '@/components/SettingsPanel';
@@ -456,7 +456,7 @@ export default function Home() {
           </>
         )}
 
-        <EventModalEnhanced
+        <EventModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveEvent}
