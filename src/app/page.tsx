@@ -20,6 +20,7 @@ import { useRippleEffect } from '@/hooks/useRippleEffect';
 import { useVimNavigation } from '@/hooks/useVimNavigation';
 import { useToast } from '@/contexts/ToastContext';
 import { useSettings } from '@/contexts/SettingsContext';
+import { useCalendarNavigation } from '@/contexts/CalendarNavigationContext';
 import { CalendarEvent } from '@/types/event';
 import KeyboardHints from '@/components/KeyboardHints';
 import TimeAnalytics from '@/components/TimeAnalytics';
@@ -30,6 +31,7 @@ export default function Home() {
   const { isOpen: isCommandPaletteOpen, openPalette, closePalette } = useCommandPalette();
   const { showToast } = useToast();
   const { settings, updateSettings } = useSettings();
+  const navigation = useCalendarNavigation();
   const createRipple = useRippleEffect();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,26 +52,40 @@ export default function Home() {
     onConfirm: () => void;
   }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
 
-  // Vim navigation setup
+  // Sync navigation selection with view changes
+  useEffect(() => {
+    if (navigation.selection) {
+      navigation.setSelection({ ...navigation.selection, view: currentView });
+    }
+  }, [currentView]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Vim navigation setup with calendar navigation integration
   const { isVimMode, showHints, setShowHints } = useVimNavigation({
     enabled: true,
     onMoveUp: () => {
-      console.log('Vim: Move Up');
+      navigation.moveUp();
     },
     onMoveDown: () => {
-      console.log('Vim: Move Down');
+      navigation.moveDown();
     },
     onMoveLeft: () => {
-      console.log('Vim: Move Left');
+      navigation.moveLeft();
     },
     onMoveRight: () => {
-      console.log('Vim: Move Right');
+      navigation.moveRight();
     },
     onSelect: () => {
-      setSelectedDate(new Date());
-      setSelectedHour(new Date().getHours());
-      setEditingEvent(undefined);
-      setIsModalOpen(true);
+      if (navigation.selection) {
+        setSelectedDate(navigation.selection.date);
+        setSelectedHour(navigation.selection.hour);
+        setEditingEvent(undefined);
+        setIsModalOpen(true);
+      } else {
+        setSelectedDate(new Date());
+        setSelectedHour(new Date().getHours());
+        setEditingEvent(undefined);
+        setIsModalOpen(true);
+      }
     },
     onEscape: () => {
       setIsModalOpen(false);

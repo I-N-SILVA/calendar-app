@@ -3,6 +3,7 @@
 import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import { useContextMenu } from '@/hooks/useContextMenu';
+import { useCalendarNavigation } from '@/contexts/CalendarNavigationContext';
 import ContextMenu from './ContextMenu';
 
 interface DayViewProps {
@@ -42,6 +43,7 @@ export default function DayView({
   } = useDragAndDrop(onEventMove || (() => {}));
   
   const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
+  const { isSelected } = useCalendarNavigation();
   const hours = Array.from({ length: 24 }, (_, i) => i);
   
   const isCurrentHour = (hour: number) => {
@@ -144,12 +146,13 @@ export default function DayView({
           });
           const timeString = hour === 0 ? '12 AM' : hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`;
           const isCurrentTime = isCurrentHour(hour);
-          
+          const isVimSelected = isSelected(selectedDate, hour);
+
           return (
             <div key={hour} className="flex">
               <div className={`w-24 p-4 text-sm font-semibold rounded-l-xl transition-all ${
-                isCurrentTime 
-                  ? 'bg-accent text-accent-foreground border-accent' 
+                isCurrentTime
+                  ? 'bg-accent text-accent-foreground border-accent'
                   : 'bg-card text-card-foreground border-border'
               }`}>
                 <div>{timeString}</div>
@@ -157,12 +160,18 @@ export default function DayView({
               </div>
               <div
                 className={`flex-1 p-4 min-h-[80px] cursor-pointer transition-all duration-200 rounded-r-xl border-l-2 ${
-                  isCurrentTime
+                  isVimSelected
+                    ? 'bg-secondary/30 border-secondary border-4 ring-4 ring-secondary/50'
+                    : isCurrentTime
                     ? 'bg-accent/20 border-accent'
                     : isToday
                     ? 'bg-primary/10 hover:bg-primary/20 border-primary/30'
                     : 'bg-card hover:bg-muted border-border'
                 } hover:shadow-md ${isDragOverSlot(selectedDate, hour) ? 'drop-zone' : ''}`}
+                aria-label={`${timeString} on ${formatDate(selectedDate)}`}
+                aria-selected={isVimSelected}
+                role="gridcell"
+                tabIndex={isVimSelected ? 0 : -1}
                 onClick={() => onTimeSlotClick?.(selectedDate, hour)}
                 onDragOver={(e) => handleDragOver(selectedDate, hour, e)}
                 onDragLeave={handleDragLeave}

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { ToastProvider } from '@/contexts/ToastContext';
 import { SettingsProvider } from '@/contexts/SettingsContext';
+import { CalendarNavigationProvider } from '@/contexts/CalendarNavigationContext';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ToastContainer from '@/components/ToastContainer';
 import "./globals.css";
@@ -36,8 +37,10 @@ export default function RootLayout({
           <ThemeProvider>
             <SettingsProvider>
               <ToastProvider>
-                {children}
-                <ToastContainer />
+                <CalendarNavigationProvider>
+                  {children}
+                  <ToastContainer />
+                </CalendarNavigationProvider>
               </ToastProvider>
             </SettingsProvider>
           </ThemeProvider>

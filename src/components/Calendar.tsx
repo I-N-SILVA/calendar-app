@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import { useContextMenu } from '@/hooks/useContextMenu';
+import { useCalendarNavigation } from '@/contexts/CalendarNavigationContext';
 import ContextMenu from './ContextMenu';
 
 interface CalendarProps {
@@ -17,7 +18,7 @@ interface CalendarProps {
 
 export default function Calendar({ events, onEventClick, onTimeSlotClick, onEventMove, onEventDelete, onEventDuplicate }: CalendarProps) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(new Date());
-  
+
   const {
     draggedEvent,
     isDragging,
@@ -32,8 +33,9 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
     handleMouseMove,
     handleClick
   } = useDragAndDrop(onEventMove || (() => {}));
-  
+
   const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
+  const { isSelected } = useCalendarNavigation();
 
   useEffect(() => {
     const today = new Date();
@@ -187,12 +189,15 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
                 
                 const isTodaySlot = isToday(day);
                 const isCurrentSlot = isTodaySlot && isCurrentHour(hour);
+                const isVimSelected = isSelected(day, hour);
 
                 return (
                   <div
                     key={`${hour}-${dayIndex}`}
                     className={`p-2 min-h-[70px] cursor-pointer transition-all duration-200 relative border ${
-                      isDragOverSlot(day, hour)
+                      isVimSelected
+                        ? 'bg-secondary/30 border-secondary border-4 ring-4 ring-secondary/50'
+                        : isDragOverSlot(day, hour)
                         ? 'bg-destructive/20 border-destructive border-4'
                         : isCurrentSlot
                         ? 'bg-accent/20 border-accent border-2'
@@ -200,6 +205,10 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
                         ? 'bg-primary/10 hover:bg-primary/20 border-primary/30'
                         : 'bg-card hover:bg-muted border-border'
                     } ${isDragging ? 'drop-zone' : ''}`}
+                    aria-label={`${day.toLocaleDateString()} at ${hour}:00`}
+                    aria-selected={isVimSelected}
+                    role="gridcell"
+                    tabIndex={isVimSelected ? 0 : -1}
                     onClick={() => onTimeSlotClick?.(day, hour)}
                     onDragOver={(e) => handleDragOver(day, hour, e)}
                     onDragLeave={(e) => handleDragLeave(e)}

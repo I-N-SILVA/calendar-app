@@ -4,6 +4,7 @@ import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
 import { useRippleEffect } from '@/hooks/useRippleEffect';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import { useContextMenu } from '@/hooks/useContextMenu';
+import { useCalendarNavigation } from '@/contexts/CalendarNavigationContext';
 import ContextMenu from './ContextMenu';
 
 interface MonthViewProps {
@@ -44,6 +45,7 @@ export default function MonthView({
   } = useDragAndDrop(onEventMove || (() => {}));
   
   const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
+  const { isSelected } = useCalendarNavigation();
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   
@@ -173,12 +175,15 @@ export default function MonthView({
         {days.map(({ date, isCurrentMonth }, index) => {
           const dayEvents = getEventsForDate(date);
           const today = isToday(date);
-          
+          const isVimSelected = isSelected(date);
+
           return (
             <div
               key={index}
               className={`border-2 cursor-pointer transition-all duration-200 min-h-[140px] ${
-                !isCurrentMonth
+                isVimSelected
+                  ? 'bg-secondary/30 border-secondary border-4 ring-4 ring-secondary/50'
+                  : !isCurrentMonth
                   ? 'bg-muted/50 border-muted text-muted-foreground'
                   : today
                   ? 'bg-primary text-primary-foreground border-primary'
@@ -189,6 +194,10 @@ export default function MonthView({
               onDragOver={(e) => handleDragOver(date, 12, e)}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(date, 12, e)}
+              aria-label={`${date.toLocaleDateString()}`}
+              aria-selected={isVimSelected}
+              role="gridcell"
+              tabIndex={isVimSelected ? 0 : -1}
             >
               {/* Date Number */}
               <div className={`font-mono font-bold mb-2 ${
