@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { CalendarEvent, DEFAULT_CATEGORIES, RecurrenceRule } from '@/types/event';
+import { CalendarEvent, DEFAULT_CATEGORIES, RecurrenceRule, EventPriority, EventStatus } from '@/types/event';
 import RecurrenceSelector from '@/components/RecurrenceSelector';
 import TimeBarPicker from '@/components/TimeBarPicker';
 
@@ -13,6 +13,7 @@ interface EventModalProps {
   selectedDate?: Date;
   selectedHour?: number;
   editingEvent?: CalendarEvent;
+  existingEvents?: CalendarEvent[];
 }
 
 export default function EventModal({
@@ -22,7 +23,8 @@ export default function EventModal({
   onDelete,
   selectedDate,
   selectedHour,
-  editingEvent
+  editingEvent,
+  existingEvents = []
 }: EventModalProps) {
   // Helper function to calculate duration
   const calculateDuration = (start: string, end: string) => {
@@ -48,8 +50,13 @@ export default function EventModal({
   const [endTime, setEndTime] = useState('');
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('work');
+  const [priority, setPriority] = useState<EventPriority>('medium');
+  const [status, setStatus] = useState<EventStatus>('confirmed');
+  const [reminderMinutes, setReminderMinutes] = useState<number>(15);
+  const [location, setLocation] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrence, setRecurrence] = useState<RecurrenceRule | undefined>();
+  const [conflicts, setConflicts] = useState<CalendarEvent[]>([]);
 
   useEffect(() => {
     if (editingEvent) {
@@ -59,6 +66,10 @@ export default function EventModal({
       setEndTime(editingEvent.endTime);
       setDescription(editingEvent.description || '');
       setCategoryId(editingEvent.categoryId || 'work');
+      setPriority(editingEvent.priority || 'medium');
+      setStatus(editingEvent.status || 'confirmed');
+      setReminderMinutes(editingEvent.reminderMinutes || 15);
+      setLocation(editingEvent.location || '');
       setIsRecurring(editingEvent.isRecurring || false);
       setRecurrence(editingEvent.recurrence);
     } else if (selectedDate) {
@@ -72,6 +83,36 @@ export default function EventModal({
     }
   }, [editingEvent, selectedDate, selectedHour]);
 
+  // Check for conflicts whenever event details change
+  useEffect(() => {
+    if (!date || !startTime || !endTime) {
+      setConflicts([]);
+      return;
+    }
+
+    const { detectConflicts } = require('@/utils/conflictDetection');
+    const eventDate = new Date(date);
+    const potentialConflicts = detectConflicts(
+      {
+        title,
+        date: eventDate,
+        startTime,
+        endTime,
+        description,
+        categoryId,
+        priority,
+        status,
+        reminderMinutes,
+        location,
+        isRecurring,
+        recurrence
+      },
+      existingEvents,
+      editingEvent?.id
+    );
+    setConflicts(potentialConflicts);
+  }, [date, startTime, endTime, existingEvents, editingEvent, title, description, categoryId, priority, status, reminderMinutes, location, isRecurring, recurrence]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !date || !startTime || !endTime) return;
@@ -84,30 +125,36 @@ export default function EventModal({
       endTime,
       description,
       categoryId,
+      priority,
+      status,
+      reminderMinutes,
+      location,
       isRecurring,
       recurrence
     });
 
-    setTitle('');
-    setDate('');
-    setStartTime('');
-    setEndTime('');
-    setDescription('');
-    setCategoryId('work');
-    setIsRecurring(false);
-    setRecurrence(undefined);
+    resetForm();
     onClose();
   };
 
-  const handleClose = () => {
+  const resetForm = () => {
     setTitle('');
     setDate('');
     setStartTime('');
     setEndTime('');
     setDescription('');
     setCategoryId('work');
+    setPriority('medium');
+    setStatus('confirmed');
+    setReminderMinutes(15);
+    setLocation('');
     setIsRecurring(false);
     setRecurrence(undefined);
+    setConflicts([]);
+  };
+
+  const handleClose = () => {
+    resetForm();
     onClose();
   };
 
@@ -250,6 +297,95 @@ export default function EventModal({
               rows={3}
             />
           </div>
+
+          <div className="brutalist-form-group stagger-animation stagger-delay-6">
+            <label htmlFor="location" className="brutalist-form-label">
+              [LOCATION]
+            </label>
+            <input
+              type="text"
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="brutalist-form-input w-full"
+              placeholder="Event location (optional)"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 stagger-animation stagger-delay-7">
+            <div className="brutalist-form-group">
+              <label htmlFor="priority" className="brutalist-form-label">
+                [PRIORITY]
+              </label>
+              <select
+                id="priority"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as EventPriority)}
+                className="brutalist-form-input w-full"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </div>
+
+            <div className="brutalist-form-group">
+              <label htmlFor="status" className="brutalist-form-label">
+                [STATUS]
+              </label>
+              <select
+                id="status"
+                value={status}
+                onChange={(e) => setStatus(e.target.value as EventStatus)}
+                className="brutalist-form-input w-full"
+              >
+                <option value="tentative">Tentative</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            <div className="brutalist-form-group">
+              <label htmlFor="reminder" className="brutalist-form-label">
+                [REMINDER]
+              </label>
+              <select
+                id="reminder"
+                value={reminderMinutes}
+                onChange={(e) => setReminderMinutes(Number(e.target.value))}
+                className="brutalist-form-input w-full"
+              >
+                <option value={0}>None</option>
+                <option value={5}>5 minutes</option>
+                <option value={15}>15 minutes</option>
+                <option value={30}>30 minutes</option>
+                <option value={60}>1 hour</option>
+                <option value={120}>2 hours</option>
+                <option value={1440}>1 day</option>
+              </select>
+            </div>
+          </div>
+
+          {conflicts.length > 0 && (
+            <div className="bg-destructive/20 border-2 border-destructive spacing-mathematical">
+              <div className="flex items-start gap-2">
+                <svg className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <div className="flex-1">
+                  <p className="font-bold text-destructive mb-2">⚠ SCHEDULING CONFLICT</p>
+                  <p className="text-sm text-muted-foreground mb-2">This event overlaps with:</p>
+                  <ul className="text-sm space-y-1">
+                    {conflicts.map(conflict => (
+                      <li key={conflict.id} className="text-foreground">
+                        • <span className="font-semibold">{conflict.title}</span> ({conflict.startTime}-{conflict.endTime})
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div>
             <RecurrenceSelector

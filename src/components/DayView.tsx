@@ -182,7 +182,11 @@ export default function DayView({
                       }}
                       onContextMenu={(e) => showContextMenu(e, event)}
                     >
-                      <div className="text-xs font-bold uppercase">↳ {event.title} [CONT]</div>
+                      <div className="text-xs font-bold uppercase flex items-center gap-1 flex-wrap">
+                        ↳ {event.title} [CONT]
+                        {event.priority === 'high' && <span className="bg-destructive text-destructive-foreground px-1" title="High priority">!</span>}
+                        {event.status === 'cancelled' && <span className="line-through opacity-60" title="Cancelled">[X]</span>}
+                      </div>
                     </div>
                   );
                 })}
@@ -218,15 +222,25 @@ export default function DayView({
                           }}
                           onContextMenu={(e) => showContextMenu(e, event)}
                         >
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <span className="font-bold">{category.icon}</span>
                             <span className="font-bold uppercase tracking-wide">{event.title}</span>
                             {duration > 1 && (
                               <span className="text-xs font-bold opacity-80">[{duration.toFixed(0)}H]</span>
                             )}
+                            {event.priority === 'high' && (
+                              <span className="text-xs font-bold bg-destructive text-destructive-foreground px-1" title="High priority">!</span>
+                            )}
+                            {event.status === 'tentative' && (
+                              <span className="text-xs opacity-75" title="Tentative">[?]</span>
+                            )}
+                            {event.status === 'cancelled' && (
+                              <span className="text-xs line-through opacity-60" title="Cancelled">[X]</span>
+                            )}
                           </div>
                           <div className="text-xs opacity-90 font-mono">
                             {event.startTime} - {event.endTime}
+                            {event.location && <span className="ml-1" title={event.location}>📍</span>}
                           </div>
                           {event.description && (
                             <div className="text-xs opacity-80 mt-1 line-clamp-2 font-mono">
