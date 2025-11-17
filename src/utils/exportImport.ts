@@ -73,14 +73,14 @@ export function importFromJSON(jsonString: string): CalendarEvent[] {
     const parsed = JSON.parse(jsonString);
     const events = Array.isArray(parsed) ? parsed : [parsed];
 
-    return events.map((event: any) => ({
+    return events.map((event: Omit<CalendarEvent, 'date'> & { date: string }) => ({
       ...event,
       date: new Date(event.date),
       recurrence: event.recurrence && event.recurrence.endValue instanceof Date
         ? { ...event.recurrence, endValue: new Date(event.recurrence.endValue) }
         : event.recurrence,
     }));
-  } catch (error) {
+  } catch {
     throw new Error('Invalid JSON format');
   }
 }
