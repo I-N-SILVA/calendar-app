@@ -136,9 +136,9 @@ export default function QuickAdd({ onAddEvent, onOpenFullModal }: QuickAddProps)
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="text-xs text-muted-foreground font-mono mb-2">[EXAMPLES]</div>
                 <div className="text-xs space-y-1 font-mono opacity-70">
-                  <div>• "Team standup tomorrow at 9am"</div>
-                  <div>• "High priority client call Friday at 2pm"</div>
-                  <div>• "Gym workout next Monday at 6am"</div>
+                  <div>• &quot;Team standup tomorrow at 9am&quot;</div>
+                  <div>• &quot;High priority client call Friday at 2pm&quot;</div>
+                  <div>• &quot;Gym workout next Monday at 6am&quot;</div>
                 </div>
               </div>
             </div>
