@@ -1,0 +1,246 @@
+/* ==========================================================================
+   BUTTON SYSTEM - Consistent sizing, variants, and accessibility
+   ========================================================================== */
+
+/* Base Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-weight: var(--font-weight-medium);
+  border: 2px solid transparent;
+  border-radius: var(--button-border-radius);
+  cursor: pointer;
+  transition: all var(--transition-base) var(--transition-ease);
+  text-decoration: none;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Button Sizes */
+.btn-sm {
+  padding: var(--button-padding-sm);
+  font-size: var(--button-font-size-sm);
+  min-height: var(--button-min-height-sm);
+}
+
+.btn-md {
+  padding: var(--button-padding-md);
+  font-size: var(--button-font-size-md);
+  min-height: var(--button-min-height-md);
+}
+
+.btn-lg {
+  padding: var(--button-padding-lg);
+  font-size: var(--button-font-size-lg);
+  min-height: var(--button-min-height-lg);
+}
+
+/* Button Variants */
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-color: var(--primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--secondary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-tertiary {
+  background: transparent;
+  color: var(--foreground);
+  border-color: var(--border);
+}
+
+.btn-tertiary:hover:not(:disabled) {
+  background: var(--muted);
+  border-color: var(--foreground);
+}
+
+.btn-tertiary:active:not(:disabled) {
+  background: var(--muted);
+  opacity: 0.8;
+}
+
+.btn-danger {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+  border-color: var(--destructive);
+}
+
+.btn-danger:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(220, 38, 38, 0.25);
+}
+
+.btn-danger:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--foreground);
+  border-color: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--muted);
+}
+
+.btn-ghost:active:not(:disabled) {
+  background: var(--muted);
+  opacity: 0.8;
+}
+
+/* Icon Buttons */
+.btn-icon {
+  padding: var(--space-2);
+  aspect-ratio: 1;
+  min-width: var(--button-min-height-md);
+}
+
+.btn-icon.btn-sm {
+  min-width: var(--button-min-height-sm);
+}
+
+.btn-icon.btn-lg {
+  min-width: var(--button-min-height-lg);
+}
+
+/* Button Focus States - WCAG Compliant */
+.btn:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Loading State */
+.btn-loading {
+  position: relative;
+  color: transparent;
+  pointer-events: none;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  border-right-color: transparent;
+  animation: button-spin 0.6s linear infinite;
+}
+
+@keyframes button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Button Groups */
+.btn-group {
+  display: inline-flex;
+  gap: var(--space-2);
+}
+
+.btn-group .btn {
+  margin: 0;
+}
+
+/* Full Width Button */
+.btn-full {
+  width: 100%;
+}
+
+/* Button with Icon */
+.btn-icon-left {
+  flex-direction: row;
+}
+
+.btn-icon-right {
+  flex-direction: row-reverse;
+}
+
+/* Brutalist Button (Legacy Support - Updated) */
+.brutalist-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--button-padding-md);
+  font-family: var(--font-mono);
+  font-size: var(--button-font-size-md);
+  font-weight: var(--font-weight-semibold);
+  min-height: var(--button-min-height-md);
+  border: 2px solid transparent;
+  border-radius: 0;
+  cursor: pointer;
+  transition: all var(--transition-base) var(--transition-ease);
+  text-decoration: none;
+  user-select: none;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.brutalist-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0 var(--foreground);
+}
+
+.brutalist-button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 2px 2px 0 var(--foreground);
+}
+
+.brutalist-button:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.brutalist-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
