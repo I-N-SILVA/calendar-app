@@ -17,6 +17,14 @@ export interface RecurrenceRule {
 export type EventPriority = 'low' | 'medium' | 'high';
 export type EventStatus = 'tentative' | 'confirmed' | 'cancelled';
 
+export interface VoiceMemo {
+  id: string;
+  audioUrl: string; // Data URL or blob URL
+  duration: number; // Duration in seconds
+  timestamp: Date;
+  name?: string;
+}
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -34,6 +42,7 @@ export interface CalendarEvent {
   location?: string;
   attendees?: string[];
   reminderMinutes?: number;
+  voiceMemos?: VoiceMemo[];
 }
 
 export const DEFAULT_CATEGORIES: EventCategory[] = [

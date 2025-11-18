@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { CalendarEvent, DEFAULT_CATEGORIES, RecurrenceRule } from '@/types/event';
+import { CalendarEvent, DEFAULT_CATEGORIES, RecurrenceRule, VoiceMemo } from '@/types/event';
 import RecurrenceSelector from '@/components/RecurrenceSelector';
 import TimeBarPicker from '@/components/TimeBarPicker';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import VoiceMemoRecorder from '@/components/VoiceMemoRecorder';
+import VoiceMemoPlayer from '@/components/VoiceMemoPlayer';
 import { findConflicts, getConflictMessage } from '@/utils/conflicts';
 
 interface EventModalProps {
@@ -41,6 +43,8 @@ export default function EventModal({
   const [showConflictWarning, setShowConflictWarning] = useState(false);
   const [showDurationWarning, setShowDurationWarning] = useState(false);
   const [pendingAction, setPendingAction] = useState<'save' | 'delete' | null>(null);
+  const [voiceMemos, setVoiceMemos] = useState<VoiceMemo[]>([]);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
 
   // Helper function to calculate duration
   const calculateDuration = (start: string, end: string) => {
@@ -92,6 +96,7 @@ export default function EventModal({
       setCategoryId(editingEvent.categoryId || 'work');
       setIsRecurring(editingEvent.isRecurring || false);
       setRecurrence(editingEvent.recurrence);
+      setVoiceMemos(editingEvent.voiceMemos || []);
     } else if (selectedDate) {
       setDate(selectedDate.toISOString().split('T')[0]);
       if (selectedHour !== undefined) {
@@ -112,6 +117,8 @@ export default function EventModal({
     setCategoryId('work');
     setIsRecurring(false);
     setRecurrence(undefined);
+    setVoiceMemos([]);
+    setShowVoiceRecorder(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -151,7 +158,8 @@ export default function EventModal({
       description,
       categoryId,
       isRecurring,
-      recurrence
+      recurrence,
+      voiceMemos: voiceMemos.length > 0 ? voiceMemos : undefined
     };
 
     onSave(eventData, editAll);
@@ -355,6 +363,56 @@ export default function EventModal({
                   setIsRecurring(newIsRecurring);
                 }}
               />
+            </div>
+
+            {/* Voice Memos Section */}
+            <div className="brutalist-form-group stagger-animation stagger-delay-6">
+              <label className="brutalist-form-label">
+                [VOICE_MEMOS]
+              </label>
+
+              {/* Existing Voice Memos */}
+              {voiceMemos.length > 0 && (
+                <div className="space-y-2 mb-4">
+                  {voiceMemos.map((memo, index) => (
+                    <VoiceMemoPlayer
+                      key={memo.id}
+                      memo={memo}
+                      onDelete={() => {
+                        setVoiceMemos(voiceMemos.filter((_, i) => i !== index));
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Voice Recorder */}
+              {showVoiceRecorder ? (
+                <VoiceMemoRecorder
+                  onSave={(memo) => {
+                    setVoiceMemos([...voiceMemos, memo]);
+                    setShowVoiceRecorder(false);
+                  }}
+                  onCancel={() => setShowVoiceRecorder(false)}
+                />
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowVoiceRecorder(true)}
+                  className="w-full brutalist-button bg-secondary text-secondary-foreground flex items-center justify-center gap-2"
+                  style={{ padding: 'var(--space-md)' }}
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  <span className="font-mono font-bold uppercase">ADD VOICE MEMO</span>
+                </button>
+              )}
             </div>
 
             <div className="flex" style={{gap: 'var(--space-md)', paddingTop: 'var(--space-xl)'}}>
