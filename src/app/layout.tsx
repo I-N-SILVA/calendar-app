@@ -12,6 +12,7 @@ import "@/styles/responsive.css";
 import "@/styles/button-system.css";
 import "@/styles/mobile-enhancements.css";
 import "@/styles/calendar-enhancements.css";
+import "@/styles/animations-polish.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
