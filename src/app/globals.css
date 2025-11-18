@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "../styles/responsive.css";
+@import "../styles/mobile-enhancements.css";
 
 :root {
   --background: oklch(0.9700 0.0025 228.7836);
