@@ -42,7 +42,7 @@ export default function EventModal({
   const [showDeleteOptions, setShowDeleteOptions] = useState(false);
   const [showConflictWarning, setShowConflictWarning] = useState(false);
   const [showDurationWarning, setShowDurationWarning] = useState(false);
-  const [pendingAction, setPendingAction] = useState<'save' | 'delete' | null>(null);
+  const [_pendingAction, setPendingAction] = useState<'save' | 'delete' | null>(null);
   const [voiceMemos, setVoiceMemos] = useState<VoiceMemo[]>([]);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
 
