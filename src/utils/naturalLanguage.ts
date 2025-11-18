@@ -1,4 +1,4 @@
-import { CalendarEvent, EventPriority } from '@/types/event';
+import { EventPriority } from '@/types/event';
 
 interface ParsedEvent {
   title: string;
