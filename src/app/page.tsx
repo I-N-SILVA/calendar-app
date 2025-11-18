@@ -24,6 +24,10 @@ import { useCalendarNavigation } from '@/contexts/CalendarNavigationContext';
 import { CalendarEvent } from '@/types/event';
 import KeyboardHints from '@/components/KeyboardHints';
 import TimeAnalytics from '@/components/TimeAnalytics';
+import QuickAdd from '@/components/QuickAdd';
+import TemplatePanel from '@/components/TemplatePanel';
+import AgendaView from '@/components/AgendaView';
+import KeyboardShortcutsPanel from '@/components/KeyboardShortcutsPanel';
 import { requestNotificationPermission, showNotification, setupReminderInterval } from '@/utils/notifications';
 
 export default function Home() {
@@ -45,6 +49,9 @@ export default function Home() {
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showExportImport, setShowExportImport] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [prefillEventData, setPrefillEventData] = useState<Partial<Omit<CalendarEvent, 'id'>> | undefined>();
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
     title: string;
@@ -114,6 +121,72 @@ export default function Home() {
       return cleanup;
     }
   }, [settings.notificationsEnabled, events, showToast, updateSettings]);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleGlobalKeyboard = (e: KeyboardEvent) => {
+      // Don't trigger if typing in input/textarea
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      // Show keyboard shortcuts
+      if (e.key === '?') {
+        e.preventDefault();
+        setShowKeyboardShortcuts(true);
+      }
+
+      // View switching
+      if (e.key === '1') { e.preventDefault(); setCurrentView('day'); }
+      if (e.key === '2') { e.preventDefault(); setCurrentView('week'); }
+      if (e.key === '3') { e.preventDefault(); setCurrentView('month'); }
+      if (e.key === '4') { e.preventDefault(); setCurrentView('agenda'); }
+
+      // Quick actions
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault();
+        setSelectedDate(new Date());
+        setSelectedHour(new Date().getHours());
+        setEditingEvent(undefined);
+        setPrefillEventData(undefined);
+        setIsModalOpen(true);
+      }
+
+      if (e.key === 't' || e.key === 'T') {
+        e.preventDefault();
+        setShowTemplates(true);
+      }
+
+      if (e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        setShowSearch(!showSearch);
+      }
+
+      if (e.key === 'g' || e.key === 'G') {
+        e.preventDefault();
+        setCurrentDate(new Date());
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyboard);
+    return () => window.removeEventListener('keydown', handleGlobalKeyboard);
+  }, [currentView, showSearch]);
+
+  const handleQuickAddEvent = (event: Omit<CalendarEvent, 'id'>) => {
+    addEvent(event);
+    showToast('Event created successfully!', 'success');
+  };
+
+  const handleOpenFullModal = (prefill?: Partial<Omit<CalendarEvent, 'id'>>) => {
+    setPrefillEventData(prefill);
+    setSelectedDate(prefill?.date);
+    setIsModalOpen(true);
+  };
+
+  const handleTemplateSelect = (event: Omit<CalendarEvent, 'id'>) => {
+    setPrefillEventData(event);
+    setIsModalOpen(true);
+  };
 
   const handleTimeSlotClick = (date: Date, hour: number) => {
     setSelectedDate(date);
@@ -252,8 +325,16 @@ export default function Home() {
           </div>
 
           {/* ASCII Divider */}
-          <div className="ascii-divider text-sm mb-12">
+          <div className="ascii-divider text-sm mb-8">
             ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+          </div>
+
+          {/* Quick Add Bar */}
+          <div className="mb-8">
+            <QuickAdd
+              onAddEvent={handleQuickAddEvent}
+              onOpenFullModal={handleOpenFullModal}
+            />
           </div>
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-8 mb-12">
@@ -345,13 +426,39 @@ export default function Home() {
               <button
                 onClick={(e) => {
                   createRipple(e);
+                  setShowTemplates(true);
+                }}
+                className="brutalist-button bg-secondary text-secondary-foreground flex items-center gap-2 text-base sm:text-lg font-semibold ripple-effect"
+                style={{padding: 'var(--space-md) var(--space-xl)'}}
+                title="Event Templates (T)"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                </svg>
+                <span className="hidden sm:inline">[TEMPLATES]</span>
+                <span className="sm:hidden">[T]</span>
+              </button>
+              <button
+                onClick={() => setShowKeyboardShortcuts(true)}
+                className="brutalist-button bg-muted text-muted-foreground flex items-center gap-2 text-sm sm:text-base"
+                style={{padding: 'var(--space-sm) var(--space-md)'}}
+                title="Keyboard Shortcuts (?)"
+              >
+                <span>⌨️</span>
+                <span className="hidden sm:inline">[?]</span>
+              </button>
+              <button
+                onClick={(e) => {
+                  createRipple(e);
                   setSelectedDate(new Date());
                   setSelectedHour(new Date().getHours());
                   setEditingEvent(undefined);
+                  setPrefillEventData(undefined);
                   setIsModalOpen(true);
                 }}
                 className="brutalist-button bg-primary text-primary-foreground flex items-center gap-3 text-base sm:text-lg font-semibold w-full sm:w-auto justify-center ripple-effect"
                 style={{padding: 'var(--space-md) var(--space-xl)'}}
+                title="Create New Event (N)"
               >
                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -453,15 +560,31 @@ export default function Home() {
                 </div>
               )}
             </div>
+
+            <div className="transition-all duration-300 ease-in-out">
+              {currentView === 'agenda' && (
+                <div className="animate-in fade-in-0 slide-in-from-bottom-4 duration-300">
+                  <AgendaView
+                    events={displayedEvents}
+                    onEventClick={handleEventClick}
+                    onEventDelete={handleDeleteEvent}
+                    onEventDuplicate={handleDuplicateEvent}
+                  />
+                </div>
+              )}
+            </div>
           </>
         )}
 
         <EventModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          onClose={() => {
+            setIsModalOpen(false);
+            setPrefillEventData(undefined);
+          }}
           onSave={handleSaveEvent}
           onDelete={handleDeleteEvent}
-          selectedDate={selectedDate}
+          selectedDate={prefillEventData?.date || selectedDate}
           selectedHour={selectedHour}
           editingEvent={editingEvent}
           allEvents={events}
@@ -510,6 +633,19 @@ export default function Home() {
             setConfirmDialog({ ...confirmDialog, isOpen: false });
           }}
           onCancel={() => setConfirmDialog({ ...confirmDialog, isOpen: false })}
+        />
+
+        {/* New Feature Panels */}
+        <TemplatePanel
+          isOpen={showTemplates}
+          onClose={() => setShowTemplates(false)}
+          onSelectTemplate={handleTemplateSelect}
+          selectedDate={selectedDate}
+        />
+
+        <KeyboardShortcutsPanel
+          isOpen={showKeyboardShortcuts}
+          onClose={() => setShowKeyboardShortcuts(false)}
         />
       </div>
     </div>
