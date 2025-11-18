@@ -6,6 +6,7 @@ import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import { useContextMenu } from '@/hooks/useContextMenu';
 import { useCalendarNavigation } from '@/contexts/CalendarNavigationContext';
 import ContextMenu from './ContextMenu';
+import GridEventCard from './GridEventCard';
 
 interface CalendarProps {
   events: CalendarEvent[];
@@ -289,68 +290,37 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
                     onDrop={(e) => handleDrop(day, hour, e)}
                   >
                     {/* Render events that span through this hour with reduced opacity */}
-                    {eventsAtThisHour.filter(event => !isEventStartHour(event, hour)).map(event => {
-                      const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES[0];
-                      return (
-                        <div
-                          key={`${event.id}-continuation-${hour}`}
-                          className={`font-mono border-2 cursor-pointer transition-all duration-150 ${category.color} border-2 opacity-60 border-l-4`}
-                          style={{padding: 'var(--space-xs) var(--space-sm)'}}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEventClick?.(event);
-                          }}
-                        >
-                          <div className="text-xs font-bold uppercase">↳ {event.title}</div>
-                        </div>
-                      );
-                    })}
-                    
+                    {eventsAtThisHour.filter(event => !isEventStartHour(event, hour)).map(event => (
+                      <GridEventCard
+                        key={`${event.id}-continuation-${hour}`}
+                        event={event}
+                        isContinuation={true}
+                        onClick={onEventClick}
+                        className="mb-1"
+                      />
+                    ))}
+
                     {/* Render events that start at this hour */}
                     {eventsStartingHere.map(event => {
-                      const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES[0];
                       const duration = getEventDuration(event);
-                      const heightMultiplier = Math.max(1, Math.min(duration, 6)); // Cap at 6 hours visual height
-                      
+
                       return (
-                        <div
+                        <GridEventCard
                           key={event.id}
-                          draggable={true}
-                          className={`font-mono border-2 cursor-pointer transition-all duration-150 ${category.color} border-2 hover:transform hover:translate-x-1 ${
-                            draggedEvent?.id === event.id ? 'dragging-event' : ''
-                          }`}
-                          style={{
-                            minHeight: `${40 + (heightMultiplier - 1) * 20}px`,
-                            zIndex: 10,
-                            padding: 'var(--space-sm) var(--space-md)'
-                          }}
-                          onDragStart={(e) => {
-                            e.stopPropagation();
-                            handleDragStart(event, e);
-                          }}
+                          event={event}
+                          duration={duration}
+                          isDragging={draggedEvent?.id === event.id}
+                          onClick={onEventClick}
+                          onEdit={onEventClick}
+                          onDelete={onEventDelete}
+                          onDuplicate={onEventDuplicate}
+                          onDragStart={handleDragStart}
                           onDragEnd={handleDragEnd}
-                          onMouseDown={(e) => handleMouseDown(event, e)}
+                          onMouseDown={handleMouseDown}
                           onMouseMove={handleMouseMove}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleClick(event, onEventClick);
-                          }}
-                          onContextMenu={(e) => showContextMenu(e, event)}
-                        >
-                          <div className="flex items-center gap-1 mb-1">
-                            <span className="font-mono font-bold">[{category.icon}]</span>
-                            <span className="font-semibold truncate font-mono">{event.title}</span>
-                            {event.isRecurring && (
-                              <span className="text-white opacity-75 text-xs font-mono" title="Recurring event">[R]</span>
-                            )}
-                          </div>
-                          <div className="opacity-90 text-xs font-mono">{event.startTime} - {event.endTime}</div>
-                          {duration > 1 && (
-                            <div className="text-xs font-mono opacity-75 mt-1">
-                              [{duration.toFixed(1)}H]
-                            </div>
-                          )}
-                        </div>
+                          onContextMenu={showContextMenu}
+                          className="mb-1 hover:scale-[1.02] hover:shadow-md"
+                        />
                       );
                     })}
                     {eventsAtThisHour.length === 0 && (

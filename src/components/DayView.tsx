@@ -6,6 +6,7 @@ import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import { useContextMenu } from '@/hooks/useContextMenu';
 import { useCalendarNavigation } from '@/contexts/CalendarNavigationContext';
 import ContextMenu from './ContextMenu';
+import GridEventCard from './GridEventCard';
 
 interface DayViewProps {
   selectedDate: Date;
@@ -241,23 +242,16 @@ export default function DayView({
                 onDrop={(e) => handleDrop(selectedDate, hour, e)}
               >
                 {/* Show spanning events with reduced opacity */}
-                {eventsSpanningThrough.map(event => {
-                  const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES[0];
-                  return (
-                    <div
-                      key={`${event.id}-span-${hour}`}
-                      className={`font-mono border-2 cursor-pointer transition-all duration-150 ${category.color} border-2 opacity-60 border-l-4 mb-2`}
-                      style={{padding: 'var(--space-xs) var(--space-sm)'}}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleClick(event, onEventClick);
-                      }}
-                      onContextMenu={(e) => showContextMenu(e, event)}
-                    >
-                      <div className="text-xs font-bold uppercase">↳ {event.title} [CONT]</div>
-                    </div>
-                  );
-                })}
+                {eventsSpanningThrough.map(event => (
+                  <GridEventCard
+                    key={`${event.id}-span-${hour}`}
+                    event={event}
+                    isContinuation={true}
+                    onClick={onEventClick}
+                    onContextMenu={showContextMenu}
+                    className="mb-2"
+                  />
+                ))}
 
                 {/* Show events starting at this hour */}
                 {eventsStartingHere.length === 0 && eventsSpanningThrough.length === 0 ? (
@@ -267,45 +261,25 @@ export default function DayView({
                 ) : (
                   <div className="space-y-2">
                     {eventsStartingHere.map(event => {
-                      const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES[0];
                       const duration = getEventDuration(event);
-                      const heightMultiplier = Math.max(1, Math.min(duration, 6)); // Cap at 6 hours visual height
-                      
+
                       return (
-                        <div
+                        <GridEventCard
                           key={event.id}
-                          className={`font-mono border-2 cursor-pointer transition-all duration-150 ${category.color} border-2 hover:transform hover:translate-x-1 ${draggedEvent?.id === event.id ? 'dragging-event' : ''}`}
-                          style={{
-                            padding: 'var(--space-sm) var(--space-md)',
-                            minHeight: `${60 + (heightMultiplier - 1) * 30}px`
-                          }}
-                          draggable={true}
-                          onDragStart={(e) => handleDragStart(event, e)}
+                          event={event}
+                          duration={duration}
+                          isDragging={draggedEvent?.id === event.id}
+                          onClick={onEventClick}
+                          onEdit={onEventClick}
+                          onDelete={onEventDelete}
+                          onDuplicate={onEventDuplicate}
+                          onDragStart={handleDragStart}
                           onDragEnd={handleDragEnd}
-                          onMouseDown={(e) => handleMouseDown(event, e)}
+                          onMouseDown={handleMouseDown}
                           onMouseMove={handleMouseMove}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleClick(event, onEventClick);
-                          }}
-                          onContextMenu={(e) => showContextMenu(e, event)}
-                        >
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-bold">{category.icon}</span>
-                            <span className="font-bold uppercase tracking-wide">{event.title}</span>
-                            {duration > 1 && (
-                              <span className="text-xs font-bold opacity-80">[{duration.toFixed(0)}H]</span>
-                            )}
-                          </div>
-                          <div className="text-xs opacity-90 font-mono">
-                            {event.startTime} - {event.endTime}
-                          </div>
-                          {event.description && (
-                            <div className="text-xs opacity-80 mt-1 line-clamp-2 font-mono">
-                              {event.description}
-                            </div>
-                          )}
-                        </div>
+                          onContextMenu={showContextMenu}
+                          className="hover:scale-[1.01] hover:shadow-lg"
+                        />
                       );
                     })}
                   </div>
