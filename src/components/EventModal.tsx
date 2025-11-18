@@ -39,6 +39,7 @@ export default function EventModal({
   const [showRecurringOptions, setShowRecurringOptions] = useState(false);
   const [showDeleteOptions, setShowDeleteOptions] = useState(false);
   const [showConflictWarning, setShowConflictWarning] = useState(false);
+  const [showDurationWarning, setShowDurationWarning] = useState(false);
   const [pendingAction, setPendingAction] = useState<'save' | 'delete' | null>(null);
 
   // Helper function to calculate duration
@@ -117,6 +118,14 @@ export default function EventModal({
     e.preventDefault();
     if (!title || !date || !startTime || !endTime) return;
 
+    // Check for unrealistic duration (>8 hours)
+    const duration = calculateDuration(startTime, endTime);
+    if (duration && duration.duration > 480) {
+      setPendingAction('save');
+      setShowDurationWarning(true);
+      return;
+    }
+
     // Check for conflicts
     if (conflicts.length > 0) {
       setPendingAction('save');
@@ -173,6 +182,7 @@ export default function EventModal({
     setShowRecurringOptions(false);
     setShowDeleteOptions(false);
     setShowConflictWarning(false);
+    setShowDurationWarning(false);
     setPendingAction(null);
     onClose();
   };
@@ -441,6 +451,32 @@ export default function EventModal({
           }}
           onCancel={() => {
             setShowConflictWarning(false);
+            setPendingAction(null);
+          }}
+        />
+      )}
+
+      {/* Duration Warning Confirmation */}
+      {showDurationWarning && (
+        <ConfirmDialog
+          isOpen={true}
+          title="Long Event Duration"
+          message={`This event is longer than 8 hours (${calculateDuration(startTime, endTime)?.text}). This might be a mistake. Do you want to create it anyway?`}
+          confirmText="Create Anyway"
+          cancelText="Go Back"
+          onConfirm={() => {
+            setShowDurationWarning(false);
+            // After duration confirmation, check for conflicts
+            if (conflicts.length > 0) {
+              setShowConflictWarning(true);
+            } else if (editingEvent && isRecurringEvent) {
+              setShowRecurringOptions(true);
+            } else {
+              saveEvent(false);
+            }
+          }}
+          onCancel={() => {
+            setShowDurationWarning(false);
             setPendingAction(null);
           }}
         />
