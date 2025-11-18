@@ -18,6 +18,7 @@ interface CalendarProps {
 
 export default function Calendar({ events, onEventClick, onTimeSlotClick, onEventMove, onEventDelete, onEventDuplicate }: CalendarProps) {
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(new Date());
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
 
   const {
     draggedEvent,
@@ -43,6 +44,16 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - dayOfWeek);
     setCurrentWeekStart(startOfWeek);
+  }, []);
+
+  // Update current time every minute for the time indicator
+  useEffect(() => {
+    const updateTime = () => setCurrentTime(new Date());
+    updateTime(); // Initial update
+
+    const interval = setInterval(updateTime, 60000); // Update every minute
+
+    return () => clearInterval(interval);
   }, []);
 
   const getWeekDays = (startDate: Date) => {
@@ -112,6 +123,29 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
     return now.getHours() === hour;
   };
 
+  // Calculate position for current time indicator
+  const getCurrentTimePosition = () => {
+    const hours = currentTime.getHours();
+    const minutes = currentTime.getMinutes();
+    // Each hour slot is approximately 70px min-height
+    // Position is calculated as: (hour * 70) + (minutes / 60 * 70)
+    const hourHeight = 70;
+    const position = (hours * hourHeight) + (minutes / 60 * hourHeight);
+    return position;
+  };
+
+  // Check if current week contains today
+  const isCurrentWeekToday = () => {
+    const today = new Date();
+    return weekDays.some(day => isToday(day));
+  };
+
+  // Get the column index for today (0-6 for Sun-Sat)
+  const getTodayColumnIndex = () => {
+    const today = new Date();
+    return weekDays.findIndex(day => isToday(day));
+  };
+
   return (
     <div className="bg-card shadow-2xl border border-border spacing-mathematical">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
@@ -152,7 +186,47 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
       </div>
 
       <div className="overflow-x-auto">
-        <div className="grid grid-cols-8 bg-muted border border-border p-1 min-w-[800px]" style={{gap: 'var(--space-xs)'}}>
+        <div className="grid grid-cols-8 bg-muted border border-border p-1 min-w-[800px] relative" style={{gap: 'var(--space-xs)'}}>
+          {/* Current Time Indicator */}
+          {isCurrentWeekToday() && (
+            <div
+              className="absolute left-0 right-0 z-20 pointer-events-none"
+              style={{
+                top: `${getCurrentTimePosition() + 45}px`, // +45px to account for header row
+                height: '3px',
+                background: 'var(--calendar-current-time, #ef4444)',
+                boxShadow: '0 0 4px rgba(239, 68, 68, 0.5)',
+              }}
+            >
+              {/* Time indicator dot on the left */}
+              <div
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1"
+                style={{
+                  width: '12px',
+                  height: '12px',
+                  borderRadius: '50%',
+                  background: 'var(--calendar-current-time, #ef4444)',
+                  boxShadow: '0 0 6px rgba(239, 68, 68, 0.7)',
+                }}
+              />
+              {/* Current time label */}
+              <div
+                className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-mono font-bold px-2 py-1 rounded"
+                style={{
+                  background: 'var(--calendar-current-time, #ef4444)',
+                  color: 'white',
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                {currentTime.toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="bg-card font-bold text-center text-card-foreground border border-border font-mono uppercase tracking-wider" style={{padding: 'var(--space-sm) var(--space-lg)'}}>
             <span className="hidden sm:inline">[TIME]</span>
             <span className="sm:hidden">[T]</span>

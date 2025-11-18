@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
 import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import { useContextMenu } from '@/hooks/useContextMenu';
@@ -17,16 +18,18 @@ interface DayViewProps {
   onEventDuplicate?: (event: CalendarEvent) => void;
 }
 
-export default function DayView({ 
-  selectedDate, 
-  events, 
-  onEventClick, 
+export default function DayView({
+  selectedDate,
+  events,
+  onEventClick,
   onTimeSlotClick,
   onDateChange,
   onEventMove,
   onEventDelete,
   onEventDuplicate
 }: DayViewProps) {
+  const [currentTime, setCurrentTime] = useState<Date>(new Date());
+
   const {
     draggedEvent,
     isDragging,
@@ -41,10 +44,20 @@ export default function DayView({
     handleMouseMove,
     handleClick
   } = useDragAndDrop(onEventMove || (() => {}));
-  
+
   const { contextMenu, showContextMenu, hideContextMenu } = useContextMenu();
   const { isSelected } = useCalendarNavigation();
   const hours = Array.from({ length: 24 }, (_, i) => i);
+
+  // Update current time every minute for the time indicator
+  useEffect(() => {
+    const updateTime = () => setCurrentTime(new Date());
+    updateTime(); // Initial update
+
+    const interval = setInterval(updateTime, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
   
   const isCurrentHour = (hour: number) => {
     const now = new Date();
@@ -97,6 +110,16 @@ export default function DayView({
 
   const isToday = selectedDate.toDateString() === new Date().toDateString();
 
+  // Calculate position for current time indicator
+  const getCurrentTimePosition = () => {
+    const hours = currentTime.getHours();
+    const minutes = currentTime.getMinutes();
+    // Each hour slot is approximately 85px min-height (80px + 5px gap)
+    const hourHeight = 85;
+    const position = (hours * hourHeight) + (minutes / 60 * hourHeight);
+    return position;
+  };
+
   return (
     <div className="bg-card rounded-2xl shadow-2xl p-8 border border-border">
       <div className="flex items-center justify-between mb-8">
@@ -136,7 +159,47 @@ export default function DayView({
         </div>
       </div>
 
-      <div className="space-y-1 max-h-[600px] overflow-y-auto">
+      <div className="space-y-1 max-h-[600px] overflow-y-auto relative">
+        {/* Current Time Indicator */}
+        {isToday && (
+          <div
+            className="absolute left-0 right-0 z-20 pointer-events-none"
+            style={{
+              top: `${getCurrentTimePosition()}px`,
+              height: '3px',
+              background: 'var(--calendar-current-time, #ef4444)',
+              boxShadow: '0 0 4px rgba(239, 68, 68, 0.5)',
+            }}
+          >
+            {/* Time indicator dot on the left */}
+            <div
+              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1"
+              style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                background: 'var(--calendar-current-time, #ef4444)',
+                boxShadow: '0 0 6px rgba(239, 68, 68, 0.7)',
+              }}
+            />
+            {/* Current time label */}
+            <div
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-mono font-bold px-2 py-1 rounded"
+              style={{
+                background: 'var(--calendar-current-time, #ef4444)',
+                color: 'white',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              {currentTime.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+              })}
+            </div>
+          </div>
+        )}
+
         {hours.map(hour => {
           const hourEvents = getEventsForHour(hour);
           const eventsStartingHere = getEventsStartingAtHour(hour);
