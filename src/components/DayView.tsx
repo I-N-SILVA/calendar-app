@@ -7,6 +7,7 @@ import { useContextMenu } from '@/hooks/useContextMenu';
 import { useCalendarNavigation } from '@/contexts/CalendarNavigationContext';
 import ContextMenu from './ContextMenu';
 import GridEventCard from './GridEventCard';
+import { groupConflictingEvents } from '@/utils/eventConflicts';
 
 interface DayViewProps {
   selectedDate: Date;
@@ -242,48 +243,94 @@ export default function DayView({
                 onDrop={(e) => handleDrop(selectedDate, hour, e)}
               >
                 {/* Show spanning events with reduced opacity */}
-                {eventsSpanningThrough.map(event => (
-                  <GridEventCard
-                    key={`${event.id}-span-${hour}`}
-                    event={event}
-                    isContinuation={true}
-                    onClick={onEventClick}
-                    onContextMenu={showContextMenu}
-                    className="mb-2"
-                  />
-                ))}
+                {eventsSpanningThrough.length > 0 && (
+                  <div className="mb-2 flex gap-1">
+                    {eventsSpanningThrough.map(event => (
+                      <div key={`${event.id}-span-${hour}`} className="flex-1 min-w-0">
+                        <GridEventCard
+                          event={event}
+                          isContinuation={true}
+                          onClick={onEventClick}
+                          onContextMenu={showContextMenu}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                {/* Show events starting at this hour */}
+                {/* Show events starting at this hour with conflict handling */}
                 {eventsStartingHere.length === 0 && eventsSpanningThrough.length === 0 ? (
                   <div className="flex items-center h-full opacity-0 hover:opacity-100 transition-opacity">
                     <span className="text-muted-foreground text-sm font-medium">+ Add Event</span>
                   </div>
-                ) : (
-                  <div className="space-y-2">
-                    {eventsStartingHere.map(event => {
-                      const duration = getEventDuration(event);
+                ) : eventsStartingHere.length > 0 ? (
+                  <>
+                    {(() => {
+                      // Group conflicting events
+                      const conflictGroups = groupConflictingEvents(eventsStartingHere);
 
-                      return (
-                        <GridEventCard
-                          key={event.id}
-                          event={event}
-                          duration={duration}
-                          isDragging={draggedEvent?.id === event.id}
-                          onClick={onEventClick}
-                          onEdit={onEventClick}
-                          onDelete={onEventDelete}
-                          onDuplicate={onEventDuplicate}
-                          onDragStart={handleDragStart}
-                          onDragEnd={handleDragEnd}
-                          onMouseDown={handleMouseDown}
-                          onMouseMove={handleMouseMove}
-                          onContextMenu={showContextMenu}
-                          className="hover:scale-[1.01] hover:shadow-lg"
-                        />
-                      );
-                    })}
-                  </div>
-                )}
+                      return conflictGroups.map((group, groupIndex) => {
+                        // If group has only one event, render normally
+                        if (group.events.length === 1) {
+                          const event = group.events[0];
+                          const duration = getEventDuration(event);
+
+                          return (
+                            <div key={event.id} className="mb-2">
+                              <GridEventCard
+                                event={event}
+                                duration={duration}
+                                isDragging={draggedEvent?.id === event.id}
+                                onClick={onEventClick}
+                                onEdit={onEventClick}
+                                onDelete={onEventDelete}
+                                onDuplicate={onEventDuplicate}
+                                onDragStart={handleDragStart}
+                                onDragEnd={handleDragEnd}
+                                onMouseDown={handleMouseDown}
+                                onMouseMove={handleMouseMove}
+                                onContextMenu={showContextMenu}
+                                className="hover:scale-[1.01] hover:shadow-lg"
+                              />
+                            </div>
+                          );
+                        }
+
+                        // Render conflicting events side-by-side
+                        return (
+                          <div
+                            key={`conflict-group-${groupIndex}`}
+                            className="mb-2 flex gap-1"
+                          >
+                            {group.events.map(event => {
+                              const duration = getEventDuration(event);
+
+                              return (
+                                <div key={event.id} className="flex-1 min-w-0">
+                                  <GridEventCard
+                                    event={event}
+                                    duration={duration}
+                                    isDragging={draggedEvent?.id === event.id}
+                                    onClick={onEventClick}
+                                    onEdit={onEventClick}
+                                    onDelete={onEventDelete}
+                                    onDuplicate={onEventDuplicate}
+                                    onDragStart={handleDragStart}
+                                    onDragEnd={handleDragEnd}
+                                    onMouseDown={handleMouseDown}
+                                    onMouseMove={handleMouseMove}
+                                    onContextMenu={showContextMenu}
+                                    className="hover:scale-[1.01] hover:shadow-lg"
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      });
+                    })()}
+                  </>
+                ) : null}
               </div>
             </div>
           );
