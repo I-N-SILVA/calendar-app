@@ -24,7 +24,7 @@ export default function ThemeToggle() {
       </div>
 
       {/* Brutalist Tooltip */}
-      <div className="absolute -bottom-10 left-0 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out bg-foreground text-background text-xs px-2 py-1 border border-foreground font-mono font-semibold whitespace-nowrap">
+      <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-300 ease-out bg-foreground text-background text-xs px-2 py-1 border border-foreground font-mono font-semibold whitespace-nowrap z-50">
         [SHIFT+CLICK_CYCLE]
       </div>
     </button>
