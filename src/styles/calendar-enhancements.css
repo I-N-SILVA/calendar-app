@@ -1,0 +1,446 @@
+/* ==========================================================================
+   CALENDAR ENHANCEMENTS - Improved calendar grid styling and UX
+   ========================================================================== */
+
+/* ==================== WEEK VIEW IMPROVEMENTS ==================== */
+
+/* Alternating row backgrounds for better scanning */
+.calendar-hour-row:nth-child(even) {
+  background: rgba(0, 0, 0, 0.01);
+}
+
+.calendar-hour-row:nth-child(odd) {
+  background: transparent;
+}
+
+[data-theme="dark"] .calendar-hour-row:nth-child(even) {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Better grid lines - subtle but visible */
+.calendar-grid-cell {
+  border: 1px solid var(--calendar-grid-border, rgba(0, 0, 0, 0.08));
+  transition: all var(--transition-fast);
+}
+
+[data-theme="dark"] .calendar-grid-cell {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Weekend column styling */
+.calendar-weekend-column {
+  background: var(--calendar-weekend-bg, rgba(0, 0, 0, 0.02));
+}
+
+[data-theme="dark"] .calendar-weekend-column {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Today column highlighting */
+.calendar-today-column {
+  background: var(--calendar-today-bg, rgba(251, 191, 36, 0.05));
+  border-left: 3px solid var(--calendar-today-border, #fbbf24) !important;
+  border-right: 3px solid var(--calendar-today-border, #fbbf24) !important;
+}
+
+/* Current hour highlighting */
+.calendar-current-hour {
+  background: rgba(59, 130, 246, 0.08);
+  border-left: 3px solid #3b82f6;
+}
+
+[data-theme="dark"] .calendar-current-hour {
+  background: rgba(59, 130, 246, 0.12);
+}
+
+/* Hour label styling */
+.calendar-hour-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ==================== MONTH VIEW IMPROVEMENTS ==================== */
+
+/* Month grid styling */
+.month-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background: var(--calendar-grid-border, rgba(0, 0, 0, 0.08));
+}
+
+/* Month day cell */
+.month-day-cell {
+  min-height: 100px;
+  background: var(--card);
+  padding: var(--space-2);
+  position: relative;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.month-day-cell:hover {
+  background: var(--muted);
+  transform: scale(1.01);
+}
+
+/* Month day number */
+.month-day-number {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--foreground);
+  margin-bottom: var(--space-2);
+}
+
+/* Today in month view */
+.month-day-today {
+  background: var(--calendar-today-bg, rgba(251, 191, 36, 0.1));
+  border: 3px solid var(--calendar-today-border, #fbbf24);
+}
+
+.month-day-today .month-day-number {
+  color: var(--calendar-today-border, #fbbf24);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+}
+
+/* Weekend days in month view */
+.month-day-weekend {
+  background: var(--calendar-weekend-bg, rgba(0, 0, 0, 0.02));
+}
+
+[data-theme="dark"] .month-day-weekend {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Other month days (previous/next month) */
+.month-day-other {
+  opacity: 0.4;
+}
+
+/* Event dots in month view (Google Calendar style) */
+.month-event-dots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: var(--space-1);
+}
+
+.month-event-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transition: transform var(--transition-fast);
+}
+
+.month-event-dot:hover {
+  transform: scale(1.5);
+}
+
+/* "+X more" indicator */
+.month-more-events {
+  font-size: var(--font-size-xs);
+  color: var(--color-primary-500);
+  font-weight: var(--font-weight-semibold);
+  margin-top: var(--space-1);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.month-more-events:hover {
+  color: var(--color-primary-600);
+  text-decoration: underline;
+}
+
+/* Event list in month cell */
+.month-event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 60px;
+  overflow: hidden;
+}
+
+.month-event-item {
+  font-size: var(--font-size-xs);
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid;
+  background: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.month-event-item:hover {
+  background: var(--accent);
+  transform: translateX(2px);
+}
+
+/* ==================== DAY VIEW IMPROVEMENTS ==================== */
+
+/* All-day events section */
+.day-view-allday-section {
+  background: var(--muted);
+  border-bottom: 2px solid var(--border);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius-lg);
+}
+
+.day-view-allday-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
+}
+
+/* ==================== AGENDA VIEW IMPROVEMENTS ==================== */
+
+/* Sticky date headers */
+.agenda-date-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  background: var(--background);
+  border-bottom: 2px solid var(--border);
+  padding: var(--space-4);
+  backdrop-filter: blur(8px);
+  background: rgba(var(--background-rgb), 0.95);
+}
+
+.agenda-date-header-day {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--foreground);
+}
+
+.agenda-date-header-date {
+  font-size: var(--font-size-sm);
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Day grouping separator */
+.agenda-day-separator {
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--border) 20%,
+    var(--border) 80%,
+    transparent
+  );
+  margin: var(--space-8) 0;
+}
+
+/* Agenda event item */
+.agenda-event-item {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  border-left: 4px solid var(--border);
+  background: var(--card);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.agenda-event-item:hover {
+  background: var(--muted);
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+}
+
+.agenda-event-time {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--muted-foreground);
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.agenda-event-content {
+  flex: 1;
+}
+
+.agenda-event-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--foreground);
+  margin-bottom: var(--space-1);
+}
+
+.agenda-event-details {
+  font-size: var(--font-size-sm);
+  color: var(--muted-foreground);
+}
+
+/* ==================== EVENT CARDS IN GRID ==================== */
+
+/* Better event card styling in calendar views */
+.calendar-event-card {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.calendar-event-card:hover {
+  transform: translateX(2px);
+  box-shadow: var(--shadow-md);
+  z-index: 10;
+}
+
+.calendar-event-card-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendar-event-card-time {
+  font-size: var(--font-size-xs);
+  color: var(--muted-foreground);
+  margin-top: 2px;
+}
+
+/* ==================== DRAG AND DROP IMPROVEMENTS ==================== */
+
+/* Drop zone highlighting */
+.calendar-drop-zone {
+  background: rgba(59, 130, 246, 0.1) !important;
+  border: 2px dashed #3b82f6 !important;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Dragging event ghost */
+.calendar-event-dragging {
+  opacity: 0.5;
+  transform: rotate(2deg);
+  cursor: grabbing !important;
+}
+
+/* ==================== EMPTY STATES ==================== */
+
+/* Empty calendar state */
+.calendar-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16);
+  text-align: center;
+}
+
+.calendar-empty-state-icon {
+  font-size: 4rem;
+  opacity: 0.3;
+  margin-bottom: var(--space-4);
+}
+
+.calendar-empty-state-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--foreground);
+  margin-bottom: var(--space-2);
+}
+
+.calendar-empty-state-message {
+  font-size: var(--font-size-base);
+  color: var(--muted-foreground);
+  max-width: 400px;
+}
+
+/* ==================== LOADING STATES ==================== */
+
+/* Skeleton loader for calendar */
+.calendar-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 25%,
+    var(--card) 50%,
+    var(--muted) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  border-radius: var(--radius-md);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ==================== RESPONSIVE IMPROVEMENTS ==================== */
+
+@media (max-width: 768px) {
+  .month-day-cell {
+    min-height: 80px;
+    padding: var(--space-1);
+  }
+
+  .month-day-number {
+    font-size: var(--font-size-xs);
+  }
+
+  .month-event-item {
+    font-size: 10px;
+    padding: 1px 2px;
+  }
+
+  .agenda-event-item {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .agenda-event-time {
+    min-width: auto;
+  }
+}
+
+/* ==================== PRINT STYLES ==================== */
+
+@media print {
+  .calendar-event-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+
+  .agenda-date-header {
+    break-after: avoid;
+  }
+
+  .calendar-hour-row:nth-child(even) {
+    background: rgba(0, 0, 0, 0.03);
+  }
+}
