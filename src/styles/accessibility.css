@@ -1,0 +1,567 @@
+/* ==========================================================================
+   ACCESSIBILITY ENHANCEMENTS - WCAG 2.1 AA Compliance
+   ========================================================================== */
+
+/* ==========================================================================
+   FOCUS INDICATORS - Enhanced keyboard navigation visibility
+   ========================================================================== */
+
+/* High-contrast focus ring for all interactive elements */
+*:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Remove default focus styles (we're replacing them) */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Enhanced focus for buttons */
+button:focus-visible,
+.brutalist-button:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 5px rgba(var(--primary-rgb, 255, 107, 53), 0.2);
+}
+
+/* Input field focus enhancement */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+  border-color: var(--primary);
+}
+
+/* Link focus styles */
+a:focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+}
+
+/* Focus within - highlight parent when child is focused */
+.focus-within-highlight:focus-within {
+  box-shadow: 0 0 0 3px var(--primary);
+}
+
+/* ==========================================================================
+   SKIP LINKS - Allow keyboard users to skip navigation
+   ========================================================================== */
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  background: var(--foreground);
+  color: var(--background);
+  padding: 1rem 2rem;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  text-transform: uppercase;
+  text-decoration: none;
+  z-index: 10000;
+  border: 3px solid var(--foreground);
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* ==========================================================================
+   SCREEN READER UTILITIES
+   ========================================================================== */
+
+/* Screen reader only text */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Focusable screen reader only text */
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* ==========================================================================
+   ARIA LIVE REGIONS - Announce dynamic content changes
+   ========================================================================== */
+
+/* Polite announcements (wait for user to finish current task) */
+.aria-live-polite {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Assertive announcements (interrupt immediately) */
+.aria-live-assertive {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Status announcements */
+.aria-status {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   KEYBOARD NAVIGATION ENHANCEMENTS
+   ========================================================================== */
+
+/* Visible keyboard navigation indicator */
+.keyboard-nav-active *:focus-visible {
+  outline: 4px solid var(--primary);
+  outline-offset: 3px;
+  z-index: 100;
+}
+
+/* Tab index highlighting for sequential navigation */
+[tabindex="0"]:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Roving tabindex support for composite widgets */
+.roving-tabindex [role="option"],
+.roving-tabindex [role="tab"],
+.roving-tabindex [role="menuitem"] {
+  cursor: pointer;
+}
+
+.roving-tabindex [role="option"]:focus,
+.roving-tabindex [role="tab"]:focus,
+.roving-tabindex [role="menuitem"]:focus {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+  background: var(--accent);
+}
+
+/* ==========================================================================
+   CONTRAST ENHANCEMENTS - Ensure WCAG AA color contrast ratios
+   ========================================================================== */
+
+/* Enhanced text contrast */
+.text-high-contrast {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+/* Enhanced link contrast */
+a {
+  color: var(--foreground);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+a:hover,
+a:focus {
+  text-decoration-thickness: 3px;
+}
+
+/* Muted text still meets contrast requirements */
+.text-muted-foreground {
+  opacity: 0.75;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   MOTION & ANIMATION - Respect reduced motion preference
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Still allow focus transitions for accessibility */
+  *:focus-visible {
+    transition: outline 0.1s ease;
+  }
+}
+
+/* ==========================================================================
+   TOUCH TARGET SIZES - WCAG 2.1 Level AAA (2.5.5)
+   ========================================================================== */
+
+/* Minimum 44×44px touch targets */
+button,
+a,
+input[type="checkbox"],
+input[type="radio"],
+select,
+.interactive {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Exception for inline text links */
+a:not(.button):not(.brutalist-button) {
+  min-width: auto;
+  min-height: auto;
+  display: inline;
+}
+
+/* Larger touch targets for mobile */
+@media (max-width: 767px) {
+  button,
+  .brutalist-button,
+  .touch-target {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
+/* ==========================================================================
+   ERROR IDENTIFICATION - Clear error messaging
+   ========================================================================== */
+
+/* Error state for form fields */
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+  border: 3px solid var(--destructive);
+  outline: none;
+}
+
+input[aria-invalid="true"]:focus,
+textarea[aria-invalid="true"]:focus,
+select[aria-invalid="true"]:focus {
+  outline: 3px solid var(--destructive);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px rgba(255, 59, 48, 0.2);
+}
+
+/* Error messages */
+.error-message {
+  color: var(--destructive);
+  font-family: var(--font-mono);
+  font-weight: bold;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-message::before {
+  content: '⚠';
+  font-size: 1.25rem;
+}
+
+/* Required field indicator */
+.required::after {
+  content: ' *';
+  color: var(--destructive);
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   MODAL ACCESSIBILITY - Trap focus and manage ARIA attributes
+   ========================================================================== */
+
+/* Modal overlay */
+[role="dialog"],
+[role="alertdialog"] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+/* Prevent background scrolling when modal is open */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 999;
+}
+
+/* ==========================================================================
+   TABLE ACCESSIBILITY - Proper headers and relationships
+   ========================================================================== */
+
+/* Table headers */
+th {
+  font-weight: bold;
+  text-align: left;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+/* Sortable column headers */
+th[aria-sort] {
+  cursor: pointer;
+  user-select: none;
+}
+
+th[aria-sort]:hover,
+th[aria-sort]:focus {
+  background: var(--muted);
+}
+
+th[aria-sort="ascending"]::after {
+  content: ' ▲';
+  font-size: 0.75em;
+}
+
+th[aria-sort="descending"]::after {
+  content: ' ▼';
+  font-size: 0.75em;
+}
+
+/* ==========================================================================
+   FORM ACCESSIBILITY - Labels and instructions
+   ========================================================================== */
+
+/* Ensure labels are associated with inputs */
+label {
+  display: block;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+}
+
+/* Form instructions */
+.form-instructions {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-mono);
+}
+
+/* Fieldset and legend */
+fieldset {
+  border: 2px solid var(--border);
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+legend {
+  font-family: var(--font-mono);
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 0 0.5rem;
+}
+
+/* ==========================================================================
+   LOADING STATES - Accessible loading indicators
+   ========================================================================== */
+
+/* Loading spinner with ARIA label */
+.loading-spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spinner 0.6s linear infinite;
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-spinner {
+    animation: none;
+    border-top-color: var(--primary);
+    opacity: 0.5;
+  }
+}
+
+/* Loading skeleton with proper ARIA */
+.skeleton[aria-busy="true"] {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    var(--muted-foreground) 50%,
+    var(--muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton[aria-busy="true"] {
+    animation: none;
+    background: var(--muted);
+  }
+}
+
+/* ==========================================================================
+   HIGH CONTRAST MODE SUPPORT
+   ========================================================================== */
+
+@media (prefers-contrast: high) {
+  * {
+    border-width: 2px !important;
+  }
+
+  button,
+  .brutalist-button {
+    border: 3px solid currentColor !important;
+  }
+
+  *:focus-visible {
+    outline-width: 4px;
+  }
+
+  .text-muted-foreground {
+    opacity: 1;
+    color: var(--foreground);
+  }
+}
+
+/* ==========================================================================
+   LANGUAGE AND DIRECTION SUPPORT
+   ========================================================================== */
+
+/* RTL support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="rtl"] .brutalist-button {
+  transform: scaleX(-1);
+}
+
+/* Language-specific adjustments */
+:lang(ar),
+:lang(he) {
+  direction: rtl;
+}
+
+/* ==========================================================================
+   ACCESSIBLE TOOLTIPS
+   ========================================================================== */
+
+[role="tooltip"] {
+  position: absolute;
+  z-index: 9999;
+  background: var(--foreground);
+  color: var(--background);
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  pointer-events: none;
+  max-width: 300px;
+}
+
+/* ==========================================================================
+   ACCESSIBLE ACCORDIONS/DISCLOSURE WIDGETS
+   ========================================================================== */
+
+[aria-expanded="false"] + [aria-hidden="true"] {
+  display: none;
+}
+
+button[aria-expanded]::after {
+  content: '';
+  display: inline-block;
+  margin-left: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+button[aria-expanded="true"]::after {
+  transform: rotate(180deg);
+}
+
+/* ==========================================================================
+   PRINT ACCESSIBILITY
+   ========================================================================== */
+
+@media print {
+  /* Ensure sufficient contrast in print */
+  * {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Hide decorative elements */
+  [aria-hidden="true"],
+  .decorative {
+    display: none !important;
+  }
+
+  /* Ensure links are underlined and show URL */
+  a {
+    text-decoration: underline !important;
+  }
+
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+  }
+}
+
+/* ==========================================================================
+   NOTIFICATION/TOAST ACCESSIBILITY
+   ========================================================================== */
+
+[role="alert"],
+[role="status"] {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 3px solid currentColor;
+  font-family: var(--font-mono);
+  font-weight: bold;
+}
+
+[role="alert"] {
+  background: var(--destructive);
+  color: var(--destructive-foreground);
+}
+
+[role="status"] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
