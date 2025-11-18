@@ -14,6 +14,9 @@ export interface RecurrenceRule {
   dayOfMonth?: number; // for monthly
 }
 
+export type EventPriority = 'low' | 'medium' | 'high';
+export type EventStatus = 'tentative' | 'confirmed' | 'cancelled';
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -26,6 +29,11 @@ export interface CalendarEvent {
   isRecurring?: boolean;
   originalEventId?: string; // for recurring event instances
   instanceDate?: Date; // specific date for this instance
+  priority?: EventPriority;
+  status?: EventStatus;
+  location?: string;
+  attendees?: string[];
+  reminderMinutes?: number;
 }
 
 export const DEFAULT_CATEGORIES: EventCategory[] = [
