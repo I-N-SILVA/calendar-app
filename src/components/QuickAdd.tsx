@@ -52,8 +52,9 @@ export default function QuickAdd({ onAddEvent, onOpenFullModal }: QuickAddProps)
       startTime: preview.startTime || '09:00',
       endTime: preview.endTime || '10:00',
       categoryId: preview.categoryId || 'work',
-      description: '',
+      description: preview.description || '',
       priority: preview.priority,
+      location: preview.location,
     };
 
     onAddEvent(event);
@@ -111,6 +112,7 @@ export default function QuickAdd({ onAddEvent, onOpenFullModal }: QuickAddProps)
                     <div>📅 {preview.date?.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
                     <div>🕐 {preview.startTime} - {preview.endTime}</div>
                     <div>📁 {preview.categoryId?.toUpperCase()}</div>
+                    {preview.location && <div>📍 {preview.location}</div>}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2">
@@ -136,9 +138,11 @@ export default function QuickAdd({ onAddEvent, onOpenFullModal }: QuickAddProps)
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="text-xs text-muted-foreground font-mono mb-2">[EXAMPLES]</div>
                 <div className="text-xs space-y-1 font-mono opacity-70">
-                  <div>• &quot;Team standup tomorrow at 9am&quot;</div>
-                  <div>• &quot;High priority client call Friday at 2pm&quot;</div>
-                  <div>• &quot;Gym workout next Monday at 6am&quot;</div>
+                  <div>• &quot;Team standup tomorrow at 9am for 15 minutes&quot;</div>
+                  <div>• &quot;Lunch from 12pm to 1:30pm&quot;</div>
+                  <div>• &quot;Doctor appointment December 25 at 2pm&quot;</div>
+                  <div>• &quot;Gym in 3 days at 6am for 2 hours&quot;</div>
+                  <div>• &quot;Coffee @ Starbucks next Monday at noon&quot;</div>
                 </div>
               </div>
             </div>
