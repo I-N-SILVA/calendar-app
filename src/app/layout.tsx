@@ -7,6 +7,7 @@ import { CalendarNavigationProvider } from '@/contexts/CalendarNavigationContext
 import ErrorBoundary from '@/components/ErrorBoundary';
 import ToastContainer from '@/components/ToastContainer';
 import "./globals.css";
+import "@/styles/responsive.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

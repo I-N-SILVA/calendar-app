@@ -1,0 +1,659 @@
+/* ==========================================================================
+   RESPONSIVE DESIGN SYSTEM - Mobile First
+   ========================================================================== */
+
+/*
+ * Breakpoint Strategy (Mobile-First)
+ * ----------------------------------
+ * xs:  0px    - 479px   (Small phones)
+ * sm:  480px  - 767px   (Phones)
+ * md:  768px  - 1023px  (Tablets)
+ * lg:  1024px - 1279px  (Small laptops)
+ * xl:  1280px - 1535px  (Desktops)
+ * 2xl: 1536px+          (Large screens)
+ */
+
+:root {
+  /* Fluid Typography (Mobile First) */
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);        /* 12px -> 14px */
+  --text-sm: clamp(0.875rem, 0.8rem + 0.375vw, 1rem);          /* 14px -> 16px */
+  --text-base: clamp(1rem, 0.925rem + 0.375vw, 1.125rem);      /* 16px -> 18px */
+  --text-lg: clamp(1.125rem, 1rem + 0.625vw, 1.25rem);         /* 18px -> 20px */
+  --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);          /* 20px -> 24px */
+  --text-2xl: clamp(1.5rem, 1.3rem + 1vw, 1.875rem);           /* 24px -> 30px */
+  --text-3xl: clamp(1.875rem, 1.5rem + 1.875vw, 2.25rem);      /* 30px -> 36px */
+  --text-4xl: clamp(2.25rem, 1.75rem + 2.5vw, 3rem);           /* 36px -> 48px */
+  --text-5xl: clamp(3rem, 2.25rem + 3.75vw, 4rem);             /* 48px -> 64px */
+
+  /* Fluid Spacing (Mobile First) */
+  --spacing-fluid-xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);    /* 4px -> 8px */
+  --spacing-fluid-sm: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);     /* 8px -> 12px */
+  --spacing-fluid-md: clamp(0.75rem, 0.6rem + 0.75vw, 1rem);      /* 12px -> 16px */
+  --spacing-fluid-lg: clamp(1rem, 0.8rem + 1vw, 1.5rem);          /* 16px -> 24px */
+  --spacing-fluid-xl: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);        /* 24px -> 32px */
+  --spacing-fluid-2xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);         /* 32px -> 48px */
+  --spacing-fluid-3xl: clamp(3rem, 2.25rem + 3.75vw, 4rem);       /* 48px -> 64px */
+
+  /* Touch-Friendly Tap Targets */
+  --tap-target-min: 44px;         /* WCAG 2.1 AA minimum */
+  --tap-target-comfortable: 48px; /* Comfortable for most users */
+  --tap-target-spacious: 56px;    /* Extra spacious */
+
+  /* Mobile-Optimized Spacing */
+  --mobile-padding: clamp(1rem, 5vw, 1.5rem);
+  --mobile-gap: clamp(0.75rem, 3vw, 1.25rem);
+
+  /* Container Sizes */
+  --container-xs: 320px;
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+
+  /* Responsive Transition Speeds */
+  --transition-fast: 150ms;
+  --transition-base: 250ms;
+  --transition-slow: 350ms;
+
+  /* Safe Areas for Mobile (iOS notch, etc.) */
+  --safe-area-inset-top: env(safe-area-inset-top, 0);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
+  --safe-area-inset-left: env(safe-area-inset-left, 0);
+  --safe-area-inset-right: env(safe-area-inset-right, 0);
+}
+
+/* ==========================================================================
+   BASE MOBILE STYLES
+   ========================================================================== */
+
+/* Mobile-first body setup */
+body {
+  font-size: var(--text-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent; /* Remove blue highlight on tap */
+  touch-action: manipulation; /* Prevent double-tap zoom */
+}
+
+/* Improve touch scrolling on iOS */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ==========================================================================
+   TOUCH-OPTIMIZED UTILITIES
+   ========================================================================== */
+
+/* Touch-friendly buttons */
+.touch-target {
+  min-height: var(--tap-target-min);
+  min-width: var(--tap-target-min);
+  display: inline-flex;
+  align-items: center;
+  justify-center: center;
+  padding: 0.75rem 1rem;
+}
+
+.touch-target-comfortable {
+  min-height: var(--tap-target-comfortable);
+  min-width: var(--tap-target-comfortable);
+}
+
+.touch-target-spacious {
+  min-height: var(--tap-target-spacious);
+  min-width: var(--tap-target-spacious);
+}
+
+/* Touch feedback states */
+.touch-feedback {
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-fast) ease-out;
+}
+
+.touch-feedback:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* Prevent accidental taps */
+.touch-prevent-double-tap {
+  touch-action: manipulation;
+}
+
+/* Thumb zone optimization (bottom 1/3 of screen) */
+.thumb-zone {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+/* ==========================================================================
+   RESPONSIVE CONTAINERS
+   ========================================================================== */
+
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--mobile-padding);
+  padding-right: var(--mobile-padding);
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    max-width: var(--container-sm);
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    max-width: var(--container-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    max-width: var(--container-lg);
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    max-width: var(--container-xl);
+  }
+}
+
+@media (min-width: 1536px) {
+  .container-responsive {
+    max-width: var(--container-2xl);
+  }
+}
+
+/* ==========================================================================
+   FLUID GRID SYSTEM
+   ========================================================================== */
+
+.grid-responsive {
+  display: grid;
+  gap: var(--mobile-gap);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 480px) {
+  .grid-responsive-sm-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-responsive-md-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .grid-responsive-md-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-lg-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .grid-responsive-lg-5 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Auto-fit grid (responsive without breakpoints) */
+.grid-auto-fit {
+  display: grid;
+  gap: var(--mobile-gap);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
+}
+
+.grid-auto-fill {
+  display: grid;
+  gap: var(--mobile-gap);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));
+}
+
+/* ==========================================================================
+   RESPONSIVE TYPOGRAPHY
+   ========================================================================== */
+
+.text-responsive-xs { font-size: var(--text-xs); }
+.text-responsive-sm { font-size: var(--text-sm); }
+.text-responsive-base { font-size: var(--text-base); }
+.text-responsive-lg { font-size: var(--text-lg); }
+.text-responsive-xl { font-size: var(--text-xl); }
+.text-responsive-2xl { font-size: var(--text-2xl); }
+.text-responsive-3xl { font-size: var(--text-3xl); }
+.text-responsive-4xl { font-size: var(--text-4xl); }
+.text-responsive-5xl { font-size: var(--text-5xl); }
+
+/* Responsive line height */
+.leading-responsive {
+  line-height: clamp(1.4, 1.3 + 0.5vw, 1.6);
+}
+
+/* ==========================================================================
+   RESPONSIVE SPACING
+   ========================================================================== */
+
+.spacing-responsive-xs { padding: var(--spacing-fluid-xs); }
+.spacing-responsive-sm { padding: var(--spacing-fluid-sm); }
+.spacing-responsive-md { padding: var(--spacing-fluid-md); }
+.spacing-responsive-lg { padding: var(--spacing-fluid-lg); }
+.spacing-responsive-xl { padding: var(--spacing-fluid-xl); }
+.spacing-responsive-2xl { padding: var(--spacing-fluid-2xl); }
+.spacing-responsive-3xl { padding: var(--spacing-fluid-3xl); }
+
+/* Responsive margins */
+.margin-responsive-md { margin: var(--spacing-fluid-md); }
+.margin-responsive-lg { margin: var(--spacing-fluid-lg); }
+.margin-responsive-xl { margin: var(--spacing-fluid-xl); }
+
+/* Responsive gaps */
+.gap-responsive-sm { gap: var(--spacing-fluid-sm); }
+.gap-responsive-md { gap: var(--spacing-fluid-md); }
+.gap-responsive-lg { gap: var(--spacing-fluid-lg); }
+.gap-responsive-xl { gap: var(--spacing-fluid-xl); }
+
+/* ==========================================================================
+   MOBILE-FIRST VISIBILITY UTILITIES
+   ========================================================================== */
+
+/* Hide on mobile, show on larger screens */
+.hidden-mobile {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .hidden-mobile {
+    display: block;
+  }
+}
+
+/* Show on mobile only */
+.mobile-only {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+}
+
+/* Tablet and up */
+.tablet-up {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .tablet-up {
+    display: block;
+  }
+}
+
+/* Desktop only */
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .desktop-only {
+    display: block;
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE FLEX UTILITIES
+   ========================================================================== */
+
+.flex-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mobile-gap);
+}
+
+@media (min-width: 768px) {
+  .flex-responsive-md-row {
+    flex-direction: row;
+  }
+}
+
+.flex-wrap-responsive {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mobile-gap);
+}
+
+/* ==========================================================================
+   MOBILE NAVIGATION
+   ========================================================================== */
+
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card);
+  border-top: 2px solid var(--border);
+  padding: var(--spacing-fluid-sm) var(--mobile-padding);
+  padding-bottom: calc(var(--spacing-fluid-sm) + var(--safe-area-inset-bottom));
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+}
+
+@media (min-width: 768px) {
+  .mobile-nav {
+    position: static;
+    border-top: none;
+    padding: var(--spacing-fluid-md);
+    justify-content: flex-start;
+    gap: var(--spacing-fluid-lg);
+  }
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: var(--tap-target-min);
+  min-height: var(--tap-target-min);
+  justify-content: center;
+  font-size: var(--text-xs);
+  color: var(--muted-foreground);
+  transition: all var(--transition-fast) ease;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.95);
+}
+
+.mobile-nav-item.active {
+  color: var(--primary);
+}
+
+@media (min-width: 768px) {
+  .mobile-nav-item {
+    flex-direction: row;
+    font-size: var(--text-sm);
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE MODAL/DIALOG
+   ========================================================================== */
+
+.modal-responsive {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+
+@media (min-width: 768px) {
+  .modal-responsive {
+    align-items: center;
+    padding: var(--spacing-fluid-xl);
+  }
+}
+
+.modal-content-responsive {
+  background: var(--card);
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 2px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: var(--spacing-fluid-lg);
+  padding-bottom: calc(var(--spacing-fluid-lg) + var(--safe-area-inset-bottom));
+}
+
+@media (min-width: 768px) {
+  .modal-content-responsive {
+    max-width: 640px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+  }
+}
+
+/* ==========================================================================
+   RESPONSIVE TABLES (Table → Cards on Mobile)
+   ========================================================================== */
+
+.table-responsive {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* On mobile, stack table as cards */
+@media (max-width: 767px) {
+  .table-responsive thead {
+    display: none;
+  }
+
+  .table-responsive tbody,
+  .table-responsive tr,
+  .table-responsive td {
+    display: block;
+  }
+
+  .table-responsive tr {
+    margin-bottom: var(--spacing-fluid-md);
+    border: 2px solid var(--border);
+    padding: var(--spacing-fluid-md);
+    background: var(--card);
+  }
+
+  .table-responsive td {
+    padding: var(--spacing-fluid-xs) 0;
+    text-align: left;
+  }
+
+  .table-responsive td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    font-size: var(--text-xs);
+    color: var(--muted-foreground);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* ==========================================================================
+   SWIPE GESTURES (Mobile)
+   ========================================================================== */
+
+.swipeable {
+  touch-action: pan-y pinch-zoom;
+  cursor: grab;
+}
+
+.swipeable:active {
+  cursor: grabbing;
+}
+
+/* Swipe indicators */
+.swipe-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition: opacity var(--transition-fast) ease;
+  pointer-events: none;
+}
+
+.swipe-indicator-left {
+  left: 1rem;
+}
+
+.swipe-indicator-right {
+  right: 1rem;
+}
+
+.swiping .swipe-indicator {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   LOADING SKELETONS (Mobile-Optimized)
+   ========================================================================== */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--muted) 0%,
+    var(--muted-foreground) 50%,
+    var(--muted) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-button {
+  height: var(--tap-target-min);
+  width: 100%;
+}
+
+/* ==========================================================================
+   PULL-TO-REFRESH (Mobile)
+   ========================================================================== */
+
+.pull-to-refresh {
+  position: relative;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pull-to-refresh-indicator {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 40px;
+  width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: top var(--transition-base) ease;
+}
+
+.pull-to-refresh.pulling .pull-to-refresh-indicator {
+  top: 10px;
+}
+
+/* ==========================================================================
+   PERFORMANCE OPTIMIZATIONS
+   ========================================================================== */
+
+/* Reduce animations on slow connections */
+@media (prefers-reduced-data: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* GPU acceleration for smooth scrolling */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* ==========================================================================
+   ORIENTATION HANDLING
+   ========================================================================== */
+
+@media (orientation: landscape) and (max-height: 500px) {
+  /* Optimize for landscape on phones */
+  .landscape-compact {
+    padding-top: var(--spacing-fluid-xs);
+    padding-bottom: var(--spacing-fluid-xs);
+  }
+
+  .modal-content-responsive {
+    max-height: 80vh;
+  }
+}
+
+/* ==========================================================================
+   HIGH DPI / RETINA DISPLAYS
+   ========================================================================== */
+
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Sharper borders on retina */
+  .border-sharp {
+    border-width: 0.5px;
+  }
+}
+
+/* ==========================================================================
+   PRINT STYLES
+   ========================================================================== */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  a {
+    text-decoration: underline;
+  }
+
+  .print-page-break {
+    page-break-after: always;
+  }
+}
