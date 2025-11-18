@@ -1,6 +1,6 @@
 'use client';
 
-export type ViewMode = 'week' | 'month' | 'day';
+export type ViewMode = 'week' | 'month' | 'day' | 'agenda';
 
 interface ViewSelectorProps {
   currentView: ViewMode;
@@ -11,7 +11,8 @@ export default function ViewSelector({ currentView, onViewChange }: ViewSelector
   const views = [
     { id: 'day' as const, name: 'Day', icon: 'D' },
     { id: 'week' as const, name: 'Week', icon: 'W' },
-    { id: 'month' as const, name: 'Month', icon: 'M' }
+    { id: 'month' as const, name: 'Month', icon: 'M' },
+    { id: 'agenda' as const, name: 'Agenda', icon: 'A' }
   ];
 
   return (
