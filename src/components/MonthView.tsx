@@ -6,6 +6,7 @@ import { useDragAndDrop } from '@/hooks/useDragAndDrop';
 import { useContextMenu } from '@/hooks/useContextMenu';
 import { useCalendarNavigation } from '@/contexts/CalendarNavigationContext';
 import ContextMenu from './ContextMenu';
+import EventPopover from './EventPopover';
 
 interface MonthViewProps {
   currentDate: Date;
@@ -72,10 +73,17 @@ export default function MonthView({
   };
 
   const getEventsForDate = (date: Date) => {
-    return events.filter(event => 
+    return events.filter(event =>
       event.date.toDateString() === date.toDateString()
-    ).slice(0, 4); // Slightly more events for month view
+    ).sort((a, b) => {
+      // Sort by start time
+      const aTime = parseInt(a.startTime.replace(':', ''));
+      const bTime = parseInt(b.startTime.replace(':', ''));
+      return aTime - bTime;
+    });
   };
+
+  const MAX_VISIBLE_EVENTS = 2; // Show only 2 events before "+X more"
 
   const getDaysArray = () => {
     const days = [];
@@ -209,17 +217,18 @@ export default function MonthView({
               
               {/* Events */}
               <div className="space-y-1">
-                {dayEvents.map((event) => {
+                {/* Show first MAX_VISIBLE_EVENTS events */}
+                {dayEvents.slice(0, MAX_VISIBLE_EVENTS).map((event) => {
                   const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES[0];
-                  
+
                   return (
                     <div
                       key={event.id}
                       className={`text-xs font-mono border-2 cursor-pointer transition-all duration-150 truncate ${
                         !isCurrentMonth ? 'opacity-50' : ''
                       } ${
-                        today 
-                          ? 'bg-background text-foreground border-background hover:bg-muted' 
+                        today
+                          ? 'bg-background text-foreground border-background hover:bg-muted'
                           : `${category.color} border-2 hover:transform hover:translate-x-1`
                       } ${draggedEvent?.id === event.id ? 'dragging-event' : ''}`}
                       style={{padding: 'var(--space-xs) var(--space-sm)'}}
@@ -241,6 +250,31 @@ export default function MonthView({
                     </div>
                   );
                 })}
+
+                {/* "+X more" indicator */}
+                {dayEvents.length > MAX_VISIBLE_EVENTS && (
+                  <EventPopover
+                    events={dayEvents}
+                    date={date}
+                    onEventClick={onEventClick}
+                    onEventDelete={onEventDelete}
+                    onEventDuplicate={onEventDuplicate}
+                    trigger={
+                      <div
+                        className={`text-xs font-mono font-bold cursor-pointer transition-all duration-150 ${
+                          today
+                            ? 'text-primary-foreground hover:text-primary-foreground/80'
+                            : 'text-primary hover:text-primary/80'
+                        }`}
+                        style={{ padding: 'var(--space-xs) var(--space-sm)' }}
+                      >
+                        +{dayEvents.length - MAX_VISIBLE_EVENTS} more
+                      </div>
+                    }
+                  />
+                )}
+
+                {/* Empty state */}
                 {dayEvents.length === 0 && isCurrentMonth && (
                   <div className="opacity-0 hover:opacity-100 transition-opacity">
                     <div className={`text-xs border-2 border-dashed font-mono ${
