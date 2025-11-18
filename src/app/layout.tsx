@@ -8,6 +8,8 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import ToastContainer from '@/components/ToastContainer';
 import "./globals.css";
 import "@/styles/responsive.css";
+import "@/styles/button-system.css";
+import "@/styles/mobile-enhancements.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
