@@ -230,7 +230,7 @@ export function parseNaturalLanguage(input: string): Partial<ParsedEvent> | null
       text = text.replace(match[0], '').trim();
       timeFound = true;
     } else {
-      // Standard time format (at 3pm, at 14:30)
+      // Standard time format (at 3pm, at 14:30, 3:30pm)
       const timeMatch = text.match(/\b(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\b/i);
       if (timeMatch) {
         let hours = parseInt(timeMatch[1]);
@@ -238,10 +238,24 @@ export function parseNaturalLanguage(input: string): Partial<ParsedEvent> | null
         const meridiem = timeMatch[3]?.toLowerCase();
 
         // Convert to 24-hour format
-        if (meridiem === 'pm' && hours !== 12) hours += 12;
-        if (meridiem === 'am' && hours === 12) hours = 0;
-        // If no meridiem and hour <= 12, assume PM for afternoon/evening hours
-        if (!meridiem && hours >= 1 && hours <= 7) hours += 12;
+        if (meridiem === 'pm' && hours !== 12) {
+          hours += 12;
+        } else if (meridiem === 'am' && hours === 12) {
+          hours = 0;
+        } else if (!meridiem) {
+          // If no meridiem specified, use context-aware logic:
+          // Hours 1-6 without meridiem are ambiguous:
+          // - If currently in AM (before noon), assume AM
+          // - If currently in PM (after noon), assume PM
+          // Hours 7-11 without meridiem: keep as-is (morning interpretation)
+          // Hour 12 without meridiem: keep as noon
+          if (hours >= 1 && hours <= 6) {
+            const currentHour = new Date().getHours();
+            if (currentHour >= 12) {
+              hours += 12; // Afternoon context
+            }
+          }
+        }
 
         result.startTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
         result.endTime = calculateEndTime(result.startTime, durationMinutes);
