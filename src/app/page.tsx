@@ -14,6 +14,7 @@ import SettingsPanel from '@/components/SettingsPanel';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import EmptyState from '@/components/EmptyState';
+import Sidebar from '@/components/Sidebar';
 import { useEvents } from '@/hooks/useEvents';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { useRippleEffect } from '@/hooks/useRippleEffect';
@@ -307,167 +308,66 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-3 sm:p-6 transition-colors duration-200 crt-effect">
-      <div className="max-w-7xl mx-auto">
-        {/* Theme Toggle - Fixed Position */}
-        <div className="fixed top-6 left-6 z-40">
-          <ThemeToggle />
-        </div>
+    <div className="min-h-screen bg-background transition-colors duration-200 crt-effect">
+      {/* Sidebar Navigation */}
+      <Sidebar
+        onCreateEvent={() => {
+          setSelectedDate(new Date());
+          setSelectedHour(new Date().getHours());
+          setEditingEvent(undefined);
+          setPrefillEventData(undefined);
+          setIsModalOpen(true);
+        }}
+        onOpenCommandPalette={openPalette}
+        onToggleAnalytics={() => setShowAnalytics(!showAnalytics)}
+        onToggleSearch={() => setShowSearch(!showSearch)}
+        onOpenExportImport={() => setShowExportImport(true)}
+        onOpenSettings={() => setShowSettings(true)}
+        onOpenTemplates={() => setShowTemplates(true)}
+        onOpenKeyboardShortcuts={() => setShowKeyboardShortcuts(true)}
+        showAnalytics={showAnalytics}
+        showSearch={showSearch}
+      />
 
-        <div className="mb-12">
-          <div className="text-center mb-12">
-            <h1 className="text-3xl sm:text-5xl font-bold text-foreground mb-4 font-mono uppercase tracking-wide blinking-cursor">
-              [CALENDAR] {isVimMode && <span className="text-primary text-xl">[VIM]</span>}
-            </h1>
-            <p className="text-muted-foreground text-base sm:text-lg transition-colors duration-200 font-mono uppercase tracking-wide font-medium leading-relaxed">
-              SCHEDULE // ORGANIZE // EXECUTE
-            </p>
-          </div>
+      {/* Theme Toggle - Fixed Position */}
+      <div className="fixed top-6 right-6 z-40">
+        <ThemeToggle />
+      </div>
 
-          {/* ASCII Divider */}
-          <div className="ascii-divider text-sm mb-8">
-            ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-          </div>
+      {/* Main Content Area */}
+      <main className="md:ml-64 pb-20 md:pb-0 p-3 sm:p-6 transition-all duration-300">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-12">
+            <div className="text-center mb-12">
+              <h1 className="text-3xl sm:text-5xl font-bold text-foreground mb-4 font-mono uppercase tracking-wide blinking-cursor">
+                [CALENDAR] {isVimMode && <span className="text-primary text-xl">[VIM]</span>}
+              </h1>
+              <p className="text-muted-foreground text-base sm:text-lg transition-colors duration-200 font-mono uppercase tracking-wide font-medium leading-relaxed">
+                SCHEDULE // ORGANIZE // EXECUTE
+              </p>
+            </div>
 
-          {/* Quick Add Bar */}
-          <div className="mb-8">
-            <QuickAdd
-              onAddEvent={handleQuickAddEvent}
-              onOpenFullModal={handleOpenFullModal}
-            />
-          </div>
+            {/* ASCII Divider */}
+            <div className="ascii-divider text-sm mb-8">
+              ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+            </div>
 
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-6 sm:gap-8 mb-12">
-            <ViewSelector
-              currentView={currentView}
-              onViewChange={setCurrentView}
-            />
-            <div className="flex flex-wrap gap-3 justify-center">
-              <button
-                onClick={(e) => {
-                  createRipple(e);
-                  openPalette();
-                }}
-                className="brutalist-button bg-accent text-accent-foreground flex items-center gap-2 text-base sm:text-lg font-semibold ripple-effect"
-                style={{padding: 'var(--space-md) var(--space-xl)'}}
-                title="Command Palette (Cmd+K)"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l3 3-3 3m5 0h3" />
-                </svg>
-                <span className="hidden sm:inline">[CMD+K]</span>
-                <span className="sm:hidden">[K]</span>
-              </button>
-              <button
-                onClick={(e) => {
-                  createRipple(e);
-                  setShowAnalytics(!showAnalytics);
-                }}
-                className={`brutalist-button flex items-center gap-2 text-base sm:text-lg font-semibold ripple-effect ${
-                  showAnalytics
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-chart-3 text-background'
-                }`}
-                style={{padding: 'var(--space-md) var(--space-xl)'}}
-                title="Time Analytics"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <span className="hidden sm:inline">[STATS]</span>
-                <span className="sm:hidden">[S]</span>
-              </button>
-              <button
-                onClick={(e) => {
-                  createRipple(e);
-                  setShowSearch(!showSearch);
-                }}
-                className={`brutalist-button flex items-center gap-2 text-base sm:text-lg font-semibold ripple-effect ${
-                  showSearch
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground'
-                }`}
-                style={{padding: 'var(--space-md) var(--space-xl)'}}
-                title="Search & Filter"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span className="hidden sm:inline">Search</span>
-              </button>
-              <button
-                onClick={(e) => {
-                  createRipple(e);
-                  setShowExportImport(true);
-                }}
-                className="brutalist-button bg-chart-4 text-background flex items-center gap-2 text-base sm:text-lg font-semibold ripple-effect"
-                style={{padding: 'var(--space-md) var(--space-xl)'}}
-                title="Export & Import"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                <span className="hidden sm:inline">[SYNC]</span>
-              </button>
-              <button
-                onClick={(e) => {
-                  createRipple(e);
-                  setShowSettings(true);
-                }}
-                className="brutalist-button bg-muted text-muted-foreground flex items-center gap-2 text-base sm:text-lg font-semibold ripple-effect"
-                style={{padding: 'var(--space-md) var(--space-xl)'}}
-                title="Settings"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </button>
-              <button
-                onClick={(e) => {
-                  createRipple(e);
-                  setShowTemplates(true);
-                }}
-                className="brutalist-button bg-secondary text-secondary-foreground flex items-center gap-2 text-base sm:text-lg font-semibold ripple-effect"
-                style={{padding: 'var(--space-md) var(--space-xl)'}}
-                title="Event Templates (T)"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                </svg>
-                <span className="hidden sm:inline">[TEMPLATES]</span>
-                <span className="sm:hidden">[T]</span>
-              </button>
-              <button
-                onClick={() => setShowKeyboardShortcuts(true)}
-                className="brutalist-button bg-muted text-muted-foreground flex items-center gap-2 text-sm sm:text-base"
-                style={{padding: 'var(--space-sm) var(--space-md)'}}
-                title="Keyboard Shortcuts (?)"
-              >
-                <span>⌨️</span>
-                <span className="hidden sm:inline">[?]</span>
-              </button>
-              <button
-                onClick={(e) => {
-                  createRipple(e);
-                  setSelectedDate(new Date());
-                  setSelectedHour(new Date().getHours());
-                  setEditingEvent(undefined);
-                  setPrefillEventData(undefined);
-                  setIsModalOpen(true);
-                }}
-                className="brutalist-button bg-primary text-primary-foreground flex items-center gap-3 text-base sm:text-lg font-semibold w-full sm:w-auto justify-center ripple-effect"
-                style={{padding: 'var(--space-md) var(--space-xl)'}}
-                title="Create New Event (N)"
-              >
-                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Create New Event
-              </button>
+            {/* Quick Add Bar */}
+            <div className="mb-8">
+              <QuickAdd
+                onAddEvent={handleQuickAddEvent}
+                onOpenFullModal={handleOpenFullModal}
+              />
+            </div>
+
+            {/* View Selector */}
+            <div className="flex justify-center mb-12">
+              <ViewSelector
+                currentView={currentView}
+                onViewChange={setCurrentView}
+              />
             </div>
           </div>
-        </div>
 
         {showSearch && (
           <>
@@ -647,7 +547,8 @@ export default function Home() {
           isOpen={showKeyboardShortcuts}
           onClose={() => setShowKeyboardShortcuts(false)}
         />
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
