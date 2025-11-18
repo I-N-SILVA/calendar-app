@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { parseNaturalLanguage } from '@/utils/naturalLanguage';
 import { CalendarEvent } from '@/types/event';
+import VoiceInput from './VoiceInput';
 
 interface QuickAddProps {
   onAddEvent: (event: Omit<CalendarEvent, 'id'>) => void;
@@ -13,6 +14,7 @@ export default function QuickAdd({ onAddEvent, onOpenFullModal }: QuickAddProps)
   const [input, setInput] = useState('');
   const [preview, setPreview] = useState<Partial<CalendarEvent> | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -72,6 +74,18 @@ export default function QuickAdd({ onAddEvent, onOpenFullModal }: QuickAddProps)
     }
   };
 
+  const handleVoiceTranscript = (transcript: string) => {
+    setInput(transcript);
+    setVoiceError(null);
+    setIsExpanded(true);
+    inputRef.current?.focus();
+  };
+
+  const handleVoiceError = (error: string) => {
+    setVoiceError(error);
+    setTimeout(() => setVoiceError(null), 5000); // Clear error after 5 seconds
+  };
+
   return (
     <div className="w-full">
       <form onSubmit={handleSubmit} className="relative">
@@ -84,18 +98,31 @@ export default function QuickAdd({ onAddEvent, onOpenFullModal }: QuickAddProps)
               onChange={(e) => setInput(e.target.value)}
               onFocus={() => setIsExpanded(true)}
               onBlur={() => setTimeout(() => setIsExpanded(false), 200)}
-              placeholder="Quick add: 'Meeting tomorrow at 3pm' or 'Gym workout Monday at 6am'"
-              className="w-full bg-card text-foreground border-2 border-border px-4 py-3 font-mono text-sm focus:border-primary focus:outline-none transition-colors"
+              placeholder="Quick add: 'Meeting tomorrow at 3pm' or speak it 🎤"
+              className="w-full bg-card text-foreground border-2 border-border px-4 py-3 pr-32 font-mono text-sm focus:border-primary focus:outline-none transition-colors"
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <VoiceInput
+                onTranscript={handleVoiceTranscript}
+                onError={handleVoiceError}
+              />
               <kbd className="hidden sm:inline-block px-2 py-1 text-xs font-mono bg-muted text-muted-foreground border border-border">
                 Ctrl+Q
               </kbd>
-              <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
             </div>
           </div>
+
+          {/* Voice Error Display */}
+          {voiceError && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-destructive/10 border-2 border-destructive px-4 py-2 z-50 animate-in slide-in-from-top-2">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-destructive flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span className="text-sm font-mono text-destructive">{voiceError}</span>
+              </div>
+            </div>
+          )}
 
           {/* Preview */}
           {isExpanded && preview && preview.title && (
