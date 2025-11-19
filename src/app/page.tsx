@@ -297,7 +297,7 @@ export default function Home() {
     }
   };
 
-  const displayedEvents = showSearch && filteredEvents.length >= 0 ? filteredEvents : events;
+  const displayedEvents = showSearch ? filteredEvents : events;
 
   if (isLoading) {
     return (

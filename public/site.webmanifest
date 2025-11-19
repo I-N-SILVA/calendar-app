@@ -1,0 +1,41 @@
+{
+  "name": "Calendar - Event Management System",
+  "short_name": "Calendar",
+  "description": "A powerful calendar app with natural language processing, voice input, and multiple views",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#00ff00",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "New Event",
+      "short_name": "New",
+      "description": "Create a new event",
+      "url": "/?action=new",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Week View",
+      "short_name": "Week",
+      "description": "View week calendar",
+      "url": "/?view=week",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

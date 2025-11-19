@@ -66,7 +66,7 @@ export function useEvents() {
   const addEvent = (eventData: Omit<CalendarEvent, 'id'>) => {
     const newEvent: CalendarEvent = {
       ...eventData,
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9)
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 11)
     };
     const updatedEvents = [...baseEvents, newEvent];
     saveBaseEvents(updatedEvents);
