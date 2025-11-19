@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarEvent } from '@/types/event';
+import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
 import { useState } from 'react';
 
 interface GridEventCardProps {
@@ -20,17 +20,6 @@ interface GridEventCardProps {
   className?: string;
 }
 
-// Category color mapping using design system tokens
-const categoryColors: Record<string, string> = {
-  work: '#3b82f6',
-  personal: '#22c55e',
-  health: '#ef4444',
-  social: '#a855f7',
-  education: '#f59e0b',
-  travel: '#06b6d4',
-  other: '#64748b',
-};
-
 export default function GridEventCard({
   event,
   duration = 1,
@@ -49,8 +38,8 @@ export default function GridEventCard({
 }: GridEventCardProps) {
   const [showActions, setShowActions] = useState(false);
 
-  // Get category color
-  const borderColor = categoryColors[event.categoryId] || categoryColors.other;
+  // Get category colors
+  const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES.find(cat => cat.id === 'other')!;
 
   // Calculate height based on duration
   const heightMultiplier = Math.max(1, Math.min(duration, 6)); // Cap at 6 hours
@@ -99,7 +88,7 @@ export default function GridEventCard({
       style={{
         minHeight: `${minHeight}px`,
         backgroundColor: 'var(--card)',
-        borderLeft: `4px solid ${borderColor}`,
+        borderLeft: `4px solid ${category.borderColorHex}`,
         borderRadius: 'var(--radius-sm)',
         padding: isContinuation ? 'var(--space-1) var(--space-2)' : 'var(--space-2) var(--space-3)',
         boxShadow: 'var(--shadow-sm)',
@@ -140,8 +129,10 @@ export default function GridEventCard({
         {/* Title */}
         <div className="flex items-start justify-between gap-1">
           <div className="flex items-center gap-1 flex-1 min-w-0">
-            {isContinuation && (
+            {isContinuation ? (
               <span className="text-muted-foreground text-xs flex-shrink-0">↳</span>
+            ) : (
+              <span className="text-xs flex-shrink-0">{category.emoji}</span>
             )}
             <h4
               className="font-semibold text-foreground text-xs font-mono truncate"

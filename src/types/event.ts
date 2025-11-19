@@ -2,7 +2,12 @@ export interface EventCategory {
   id: string;
   name: string;
   color: string;
+  bgColor: string;
+  textColor: string;
+  borderColor: string;
+  borderColorHex: string; // Hex color for inline styles
   icon: string;
+  emoji: string;
 }
 
 export interface RecurrenceRule {
@@ -46,11 +51,81 @@ export interface CalendarEvent {
 }
 
 export const DEFAULT_CATEGORIES: EventCategory[] = [
-  { id: 'work', name: 'Work', color: 'bg-primary text-primary-foreground border-primary', icon: '[W]' },
-  { id: 'personal', name: 'Personal', color: 'bg-accent text-accent-foreground border-accent', icon: '[P]' },
-  { id: 'health', name: 'Health', color: 'bg-destructive text-destructive-foreground border-destructive', icon: '[H]' },
-  { id: 'social', name: 'Social', color: 'bg-secondary text-secondary-foreground border-secondary', icon: '[S]' },
-  { id: 'education', name: 'Education', color: 'bg-chart-3 text-background border-chart-3', icon: '[E]' },
-  { id: 'travel', name: 'Travel', color: 'bg-chart-4 text-background border-chart-4', icon: '[T]' },
-  { id: 'other', name: 'Other', color: 'bg-muted text-muted-foreground border-muted', icon: '[O]' }
+  {
+    id: 'work',
+    name: 'Work',
+    color: 'bg-primary text-primary-foreground border-primary',
+    bgColor: 'bg-blue-500',
+    textColor: 'text-white',
+    borderColor: 'border-blue-600',
+    borderColorHex: '#2563eb',
+    icon: '[W]',
+    emoji: '💼'
+  },
+  {
+    id: 'personal',
+    name: 'Personal',
+    color: 'bg-accent text-accent-foreground border-accent',
+    bgColor: 'bg-purple-500',
+    textColor: 'text-white',
+    borderColor: 'border-purple-600',
+    borderColorHex: '#9333ea',
+    icon: '[P]',
+    emoji: '⭐'
+  },
+  {
+    id: 'health',
+    name: 'Health',
+    color: 'bg-destructive text-destructive-foreground border-destructive',
+    bgColor: 'bg-red-500',
+    textColor: 'text-white',
+    borderColor: 'border-red-600',
+    borderColorHex: '#dc2626',
+    icon: '[H]',
+    emoji: '❤️'
+  },
+  {
+    id: 'social',
+    name: 'Social',
+    color: 'bg-secondary text-secondary-foreground border-secondary',
+    bgColor: 'bg-pink-500',
+    textColor: 'text-white',
+    borderColor: 'border-pink-600',
+    borderColorHex: '#db2777',
+    icon: '[S]',
+    emoji: '🎉'
+  },
+  {
+    id: 'education',
+    name: 'Education',
+    color: 'bg-chart-3 text-background border-chart-3',
+    bgColor: 'bg-yellow-500',
+    textColor: 'text-black',
+    borderColor: 'border-yellow-600',
+    borderColorHex: '#ca8a04',
+    icon: '[E]',
+    emoji: '📚'
+  },
+  {
+    id: 'travel',
+    name: 'Travel',
+    color: 'bg-chart-4 text-background border-chart-4',
+    bgColor: 'bg-teal-500',
+    textColor: 'text-white',
+    borderColor: 'border-teal-600',
+    borderColorHex: '#0d9488',
+    icon: '[T]',
+    emoji: '✈️'
+  },
+  {
+    id: 'other',
+    name: 'Other',
+    color: 'bg-muted text-muted-foreground border-muted',
+    bgColor: 'bg-gray-500',
+    textColor: 'text-white',
+    borderColor: 'border-gray-600',
+    borderColorHex: '#4b5563',
+    icon: '[O]',
+    emoji: '📌'
+  }
 ];

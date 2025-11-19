@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarEvent } from '@/types/event';
+import { CalendarEvent, DEFAULT_CATEGORIES } from '@/types/event';
 import { useState } from 'react';
 
 interface EventCardProps {
@@ -15,17 +15,6 @@ interface EventCardProps {
   isSelected?: boolean;
   className?: string;
 }
-
-// Category color mapping using design system tokens
-const categoryColors: Record<string, string> = {
-  work: 'var(--category-work)',
-  personal: 'var(--category-personal)',
-  health: 'var(--category-health)',
-  social: 'var(--category-social)',
-  education: 'var(--category-education)',
-  travel: 'var(--category-travel)',
-  other: 'var(--category-other)',
-};
 
 export default function EventCard({
   event,
@@ -44,8 +33,8 @@ export default function EventCard({
   // Check if event is in the past
   const isPast = new Date(event.date) < new Date(new Date().setHours(0, 0, 0, 0));
 
-  // Get category color
-  const borderColor = categoryColors[event.categoryId] || categoryColors.other;
+  // Get category colors
+  const category = DEFAULT_CATEGORIES.find(cat => cat.id === event.categoryId) || DEFAULT_CATEGORIES.find(cat => cat.id === 'other')!;
 
   // Priority badge colors
   const priorityColors = {
@@ -113,7 +102,7 @@ export default function EventCard({
       `}
       style={{
         borderLeftWidth: '6px',
-        borderLeftColor: borderColor,
+        borderLeftColor: category.borderColorHex,
         boxShadow: 'var(--shadow-sm)',
       }}
       onClick={handleClick}
@@ -124,17 +113,20 @@ export default function EventCard({
       <div className="flex flex-col gap-2">
         {/* Title and Priority Row */}
         <div className="flex items-start justify-between gap-2">
-          <h3
-            className={`
-              font-bold text-foreground font-mono
-              ${variant === 'compact' ? 'text-sm' : 'text-base'}
-              ${variant === 'list' ? 'text-lg' : ''}
-              line-clamp-2
-              flex-1
-            `}
-          >
-            {event.title}
-          </h3>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-xl flex-shrink-0">{category.emoji}</span>
+            <h3
+              className={`
+                font-bold text-foreground font-mono
+                ${variant === 'compact' ? 'text-sm' : 'text-base'}
+                ${variant === 'list' ? 'text-lg' : ''}
+                line-clamp-2
+                flex-1
+              `}
+            >
+              {event.title}
+            </h3>
+          </div>
 
           {/* Priority Badge */}
           {event.priority && event.priority !== 'medium' && (
