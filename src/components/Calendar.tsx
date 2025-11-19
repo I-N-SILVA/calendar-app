@@ -254,14 +254,26 @@ export default function Calendar({ events, onEventClick, onTimeSlotClick, onEven
                           }}
                           onContextMenu={(e) => showContextMenu(e, event)}
                         >
-                          <div className="flex items-center gap-1 mb-1">
+                          <div className="flex items-center gap-1 mb-1 flex-wrap">
                             <span className="font-mono font-bold">[{category.icon}]</span>
                             <span className="font-semibold truncate font-mono">{event.title}</span>
                             {event.isRecurring && (
                               <span className="text-white opacity-75 text-xs font-mono" title="Recurring event">[R]</span>
                             )}
+                            {event.priority === 'high' && (
+                              <span className="text-xs font-bold bg-destructive text-destructive-foreground px-1" title="High priority">!</span>
+                            )}
+                            {event.status === 'tentative' && (
+                              <span className="text-xs opacity-75 font-mono" title="Tentative">[?]</span>
+                            )}
+                            {event.status === 'cancelled' && (
+                              <span className="text-xs line-through opacity-60 font-mono" title="Cancelled">[X]</span>
+                            )}
                           </div>
-                          <div className="opacity-90 text-xs font-mono">{event.startTime} - {event.endTime}</div>
+                          <div className="opacity-90 text-xs font-mono">
+                            {event.startTime} - {event.endTime}
+                            {event.location && <span className="ml-1" title={event.location}>📍</span>}
+                          </div>
                           {duration > 1 && (
                             <div className="text-xs font-mono opacity-75 mt-1">
                               [{duration.toFixed(1)}H]

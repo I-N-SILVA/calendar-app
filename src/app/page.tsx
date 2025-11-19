@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Calendar from '@/components/Calendar';
 import DayView from '@/components/DayView';
 import MonthView from '@/components/MonthView';
@@ -13,14 +13,17 @@ import { useEvents } from '@/hooks/useEvents';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { useRippleEffect } from '@/hooks/useRippleEffect';
 import { useVimNavigation } from '@/hooks/useVimNavigation';
+import { useNotifications } from '@/hooks/useNotifications';
 import { CalendarEvent } from '@/types/event';
 import KeyboardHints from '@/components/KeyboardHints';
 import TimeAnalytics from '@/components/TimeAnalytics';
+import { exportToICalendar, exportToJSON } from '@/utils/export';
 
 export default function Home() {
   const { events, addEvent, updateEvent, deleteEvent } = useEvents();
   const { isOpen: isCommandPaletteOpen, openPalette, closePalette } = useCommandPalette();
   const createRipple = useRippleEffect();
+  const { permission, requestPermission, hasNotificationSupport } = useNotifications(events);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedHour, setSelectedHour] = useState<number>();
@@ -30,6 +33,13 @@ export default function Home() {
   const [filteredEvents, setFilteredEvents] = useState<CalendarEvent[]>([]);
   const [showSearch, setShowSearch] = useState(false);
   const [showAnalytics, setShowAnalytics] = useState(false);
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if (hasNotificationSupport && permission === 'default') {
+      requestPermission();
+    }
+  }, [hasNotificationSupport, permission, requestPermission]);
 
   // Vim navigation setup
   const { isVimMode, showHints, setShowHints } = useVimNavigation({
@@ -213,9 +223,44 @@ export default function Home() {
                 </svg>
                 Create New Event
               </button>
+              <button
+                onClick={(e) => {
+                  createRipple(e);
+                  exportToICalendar(events, 'calendar.ics');
+                }}
+                className="brutalist-button bg-chart-4 text-background flex items-center gap-2 text-base sm:text-lg font-semibold ripple-effect" style={{padding: 'var(--space-md) var(--space-xl)'}}
+                title="Export to iCalendar"
+              >
+                <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                <span className="hidden sm:inline">Export</span>
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Notification permission banner */}
+        {hasNotificationSupport && permission === 'default' && (
+          <div className="bg-accent/20 border-2 border-accent spacing-mathematical mb-8">
+            <div className="flex items-start gap-3">
+              <svg className="w-6 h-6 text-accent flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <div className="flex-1">
+                <p className="font-bold text-foreground mb-1">Enable Event Notifications</p>
+                <p className="text-sm text-muted-foreground mb-3">Get reminded about upcoming events</p>
+                <button
+                  onClick={requestPermission}
+                  className="brutalist-button bg-accent text-accent-foreground text-sm"
+                  style={{padding: 'var(--space-sm) var(--space-md)'}}
+                >
+                  Enable Notifications
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {showSearch && (
           <>
@@ -300,6 +345,7 @@ export default function Home() {
           selectedDate={selectedDate}
           selectedHour={selectedHour}
           editingEvent={editingEvent}
+          existingEvents={events}
         />
 
         <CommandPalette
