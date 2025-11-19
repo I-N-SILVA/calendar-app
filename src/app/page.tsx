@@ -487,6 +487,7 @@ export default function Home() {
           selectedDate={prefillEventData?.date || selectedDate}
           selectedHour={selectedHour}
           editingEvent={editingEvent}
+          prefillData={prefillEventData}
           allEvents={events}
         />
 

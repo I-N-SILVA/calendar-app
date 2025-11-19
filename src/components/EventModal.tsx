@@ -17,6 +17,7 @@ interface EventModalProps {
   selectedDate?: Date;
   selectedHour?: number;
   editingEvent?: CalendarEvent;
+  prefillData?: Partial<Omit<CalendarEvent, 'id'>>;
   allEvents: CalendarEvent[];
 }
 
@@ -28,6 +29,7 @@ export default function EventModal({
   selectedDate,
   selectedHour,
   editingEvent,
+  prefillData,
   allEvents
 }: EventModalProps) {
   const [title, setTitle] = useState('');
@@ -88,6 +90,7 @@ export default function EventModal({
 
   useEffect(() => {
     if (editingEvent) {
+      // Editing existing event - populate all fields
       setTitle(editingEvent.title);
       setDate(editingEvent.date.toISOString().split('T')[0]);
       setStartTime(editingEvent.startTime);
@@ -97,7 +100,19 @@ export default function EventModal({
       setIsRecurring(editingEvent.isRecurring || false);
       setRecurrence(editingEvent.recurrence);
       setVoiceMemos(editingEvent.voiceMemos || []);
+    } else if (prefillData) {
+      // Template or prefill data - auto-fill all provided fields
+      setTitle(prefillData.title || '');
+      setDate(prefillData.date ? prefillData.date.toISOString().split('T')[0] : selectedDate?.toISOString().split('T')[0] || '');
+      setStartTime(prefillData.startTime || '');
+      setEndTime(prefillData.endTime || '');
+      setDescription(prefillData.description || '');
+      setCategoryId(prefillData.categoryId || 'work');
+      setIsRecurring(prefillData.isRecurring || false);
+      setRecurrence(prefillData.recurrence);
+      setVoiceMemos(prefillData.voiceMemos || []);
     } else if (selectedDate) {
+      // New event from time slot click
       setDate(selectedDate.toISOString().split('T')[0]);
       if (selectedHour !== undefined) {
         const timeString = selectedHour.toString().padStart(2, '0') + ':00';
@@ -106,7 +121,7 @@ export default function EventModal({
         setEndTime(endHour.toString().padStart(2, '0') + ':00');
       }
     }
-  }, [editingEvent, selectedDate, selectedHour]);
+  }, [editingEvent, prefillData, selectedDate, selectedHour]);
 
   const resetForm = () => {
     setTitle('');
